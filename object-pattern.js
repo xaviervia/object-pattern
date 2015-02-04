@@ -37,14 +37,14 @@ var Matchable = function () {}
 // matchSomeValue({"property": "value"}); // => true
 // ```
 //
-var wildcardProperty = function (value) {
-  return {
-    value: value,
-    match: wildcardProperty.match
+var wildcardProperty = (function (match) {
+  return function (value) {
+    return {
+      value: value,
+      match: match
+    }
   }
-}
-
-wildcardProperty.match = function (object) {
+})(function (object) {
   if (this.value instanceof Matchable) {
     for (key in object) if (this.value.match(object[key])) return true }
 
@@ -52,7 +52,7 @@ wildcardProperty.match = function (object) {
     for (key in object) if (object[key] === this.value) return true }
 
   return false
-}
+})
 
 
 
