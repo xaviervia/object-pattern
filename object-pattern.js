@@ -14,36 +14,37 @@ var Matchable = function () {}
 
 
 
-// WildcardProperty
+// wildcardProperty
 // ----------------
 //
-// Returns `true` if the value of any property is `===` to the assigned value.
-// `false` otherwise. If initialized with an inheritor of `Matchable` it will
-// forward the `match` to the matchable instead.
+// Returns `true` if the value of any property of the `object` is `===` to the
+// `value`, `false` otherwise. If `value` is a `Function` it will
+// forward the value of each of the properties of `object` to that function
+// instead and return `true` only if the function returns `true` for some
+// property.
 //
 // Usage:
 //
 // ```javascript
 // // Static value property
-// var wildcardProperty = new WildcardProperty("public"):
-// wildcardProperty.match({"project": "public"}); // => true
+// var matchPublich = wildcardProperty("public"):
+// matchPublic.match({"project": "public"}); // => true
 //
 // // Matchable
 // var matchable    = new Matchable();
-// matchable.match  = function () { return true } ;
-// wildcardProperty = new WildcardProperty(matchable);
-// wildcardProperty.match({"property": "value"}); // => true
+// matchable.match  = function (value) { return value === "some value"; };
+// var matchSomeValue = wildcardProperty(matchable);
+// matchSomeValue({"property": "value"}); // => true
 // ```
 //
-var WildcardProperty = function (value) {
-  this.value = value
+var wildcardProperty = function (value) {
+  return {
+    value: value,
+    match: wildcardProperty.match
+  }
 }
 
-
-WildcardProperty.prototype = new Matchable
-
-
-WildcardProperty.prototype.match = function (object) {
+wildcardProperty.match = function (object) {
   if (this.value instanceof Matchable) {
     for (key in object) if (this.value.match(object[key])) return true }
 
@@ -479,7 +480,7 @@ ArrayEllipsis.prototype.match = function (array) {
 
 module.exports = {
   Matchable: Matchable,
-  WildcardProperty: WildcardProperty,
+  wildcardProperty: wildcardProperty,
   ExactProperty: ExactProperty,
   Negator: Negator,
   ObjectPattern: ObjectPattern,
