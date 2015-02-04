@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/xaviervia/object-pattern/issues"
   },
+  "devDependencies": {
+    "washington": "0.7.1"
+  },
   "homepage": "https://github.com/xaviervia/object-pattern"
 }
