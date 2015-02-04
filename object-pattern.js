@@ -10,7 +10,10 @@
 // implement (although `Matchable` itself does not) is to expose a `match`
 // method that returns either `true` or `false`.
 //
-var Matchable = function () {}
+var Matchable = function (f) {
+  if (f instanceof Function) f.type = Matchable
+  return f
+}
 
 
 
@@ -44,7 +47,7 @@ var wildcardProperty = (function (match) {
       match: match
     }
   }
-})(function (object) {
+})(Matchable(function (object) {
   if (this.value instanceof Matchable) {
     for (key in object) if (this.value.match(object[key])) return true }
 
@@ -52,7 +55,7 @@ var wildcardProperty = (function (match) {
     for (key in object) if (object[key] === this.value) return true }
 
   return false
-})
+}))
 
 
 
@@ -86,8 +89,6 @@ var wildcardProperty = (function (match) {
 // ```
 //
 var exactProperty = (function (match) {
-  match.type = Matchable
-
   return function (name, value) {
     return {
       name: name,
@@ -95,7 +96,7 @@ var exactProperty = (function (match) {
       match: match
     }
   }
-})(function (object) {
+})(Matchable(function (object) {
   if (this.value.match instanceof Function &&
       this.value.match.type === Matchable)
     return  object[this.name] &&
@@ -103,7 +104,7 @@ var exactProperty = (function (match) {
 
   return  object[this.name] &&
           object[this.name] === this.value
-})
+}))
 
 
 

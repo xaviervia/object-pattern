@@ -26,13 +26,11 @@ example("exactProperty #match: false if property is not there", function () {
 
 example("exactProperty + Matchable #match: delegates to matchable", function () {
   var matchable = {
-    match: function (value) {
+    match: Matchable(function (value) {
       this.match.calledWith = value
       return true
-    }
+    })
   }
-
-  matchable.match.type = Matchable
 
   assert(exactProperty("property", matchable).match({"property": "value"}))
   assert.equal(matchable.match.calledWith, "value")
