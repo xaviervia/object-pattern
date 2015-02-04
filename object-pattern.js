@@ -56,7 +56,7 @@ var wildcardProperty = (function (match) {
 
 
 
-// ExactProperty
+// exactProperty
 // -------------
 //
 // Returns `true` if there is a property with the given name which value is
@@ -69,37 +69,41 @@ var wildcardProperty = (function (match) {
 //
 // ```javascript
 // // Static value property
-// var exactProperty = new ExactProperty("project", "public"):
+// var exactProperty = new exactProperty("project", "public"):
 // exactProperty.match({"project": "public"}); // => true
 //
 // // Matchable
 // var matchable    = new Matchable();
 // matchable.match  = function () { return true } ;
-// exactProperty = new ExactProperty("property", matchable);
+// exactProperty = new exactProperty("property", matchable);
 // exactProperty.match({"property": "value"}); // => true
 //
 // // Matchable but property missing
 // var matchable    = new Matchable();
 // matchable.match  = function () { return true };
-// exactProperty = new ExactProperty("project", matchable);
+// exactProperty = new exactProperty("project", matchable);
 // exactProperty.match({"property": "value"}); // => false
 // ```
 //
-var ExactProperty = function (name, value) {
-  this.name   = name
-  this.value  = value
-}
+var exactProperty = (function (match) {
+  match.type = Matchable
 
+  return function (name, value) {
+    return {
+      name: name,
+      value: value,
+      match: match
+    }
+  }
+})(function (object) {
+  if (this.value.match instanceof Function &&
+      this.value.match.type === Matchable)
+    return  object[this.name] &&
+            this.value.match(object[this.name])
 
-ExactProperty.prototype = new Matchable
-
-
-ExactProperty.prototype.match = function (object) {
-  if (this.value instanceof Matchable)
-    return object[this.name] && this.value.match(object[this.name])
-
-  return object[this.name] && object[this.name] === this.value
-}
+  return  object[this.name] &&
+          object[this.name] === this.value
+})
 
 
 
@@ -140,9 +144,9 @@ Negator.prototype.match = function (object) {
 // Usage:
 // ```javascript
 // var property = new ObjectPattern(
-//   new ExactProperty("public", true),
+//   new exactProperty("public", true),
 //   new WildcardProperty("value"),
-//   new ExactProperty("timestamp", 123456789)
+//   new exactProperty("timestamp", 123456789)
 // )
 //
 // property.match({
@@ -481,7 +485,7 @@ ArrayEllipsis.prototype.match = function (array) {
 module.exports = {
   Matchable: Matchable,
   wildcardProperty: wildcardProperty,
-  ExactProperty: ExactProperty,
+  exactProperty: exactProperty,
   Negator: Negator,
   ObjectPattern: ObjectPattern,
   WildcardValue: WildcardValue,

@@ -3,7 +3,7 @@ var assert  = require("assert")
 
 var ObjectPattern = require("../object-pattern").ObjectPattern
 var Matchable = require("../object-pattern").Matchable
-var ExactProperty = require("../object-pattern").ExactProperty
+var exactProperty = require("../object-pattern").exactProperty
 var wildcardProperty = require("../object-pattern").wildcardProperty
 
 
@@ -16,9 +16,9 @@ example("ObjectPattern is a Matchable", function () {
 
 example("ObjectPattern: AND of three properties", function () {
   var property = new ObjectPattern(
-    new ExactProperty("public", true),
+    exactProperty("public", true),
     wildcardProperty("value"),
-    new ExactProperty("timestamp", 123456789)
+    exactProperty("timestamp", 123456789)
   )
 
   assert(property.match({
@@ -32,9 +32,9 @@ example("ObjectPattern: AND of three properties", function () {
 
 example("ObjectPattern: AND of three properties (false)", function () {
   var property = new ObjectPattern(
-    new ExactProperty("public", true),
+    exactProperty("public", true),
     wildcardProperty("value"),
-    new ExactProperty("timestamp", 123456789)
+    exactProperty("timestamp", 123456789)
   )
 
   assert( ! property.match({
