@@ -6,6 +6,12 @@ var Matchable = require("../object-pattern").Matchable
 
 
 
+example("exactProperty match has type Matchable", function () {
+  assert(exactProperty().match.type === Matchable)
+})
+
+
+
 example("exactProperty + non-Matchable #match: true if both OK", function () {
   assert( exactProperty("name", "value").match({"name": "value"}) )
 })

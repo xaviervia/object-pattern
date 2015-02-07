@@ -6,6 +6,12 @@ var wildcardProperty = require("../object-pattern").wildcardProperty
 
 
 
+example("wildcardProperty match has type Matchable", function () {
+  assert(wildcardProperty().match.type === Matchable)
+})
+
+
+
 example("wildcardProperty + string value #match: correct value, true", function () {
   assert( wildcardProperty("value").match({"something": "value"}) )
 })

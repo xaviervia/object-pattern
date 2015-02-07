@@ -65,26 +65,26 @@ var wildcardProperty = (function (match) {
 // Returns `true` if there is a property with the given name which value is
 // `===` to the assigned value. `false` otherwise.
 //
-// If initialized with an inheritor of `Matchable` it will
-// forward the `match` to the matchable, if the property exists.
+// If initialized with a `Matchable` it will forward the property value to the
+// `match` method to the matchable, if the property exists.
 //
 // Usage:
 //
 // ```javascript
 // // Static value property
-// var exactProperty = new exactProperty("project", "public"):
+// var exactProperty = exactProperty("project", "public"):
 // exactProperty.match({"project": "public"}); // => true
 //
 // // Matchable
 // var matchable    = new Matchable();
 // matchable.match  = function () { return true } ;
-// exactProperty = new exactProperty("property", matchable);
+// exactProperty    = exactProperty("property", matchable);
 // exactProperty.match({"property": "value"}); // => true
 //
 // // Matchable but property missing
 // var matchable    = new Matchable();
 // matchable.match  = function () { return true };
-// exactProperty = new exactProperty("project", matchable);
+// exactProperty    = exactProperty("project", matchable);
 // exactProperty.match({"property": "value"}); // => false
 // ```
 //
@@ -108,7 +108,7 @@ var exactProperty = (function (match) {
 
 
 
-// Negator
+// negator
 // -------
 //
 // Delegates the matching to the sent matchable and negates the result.
@@ -120,23 +120,24 @@ var exactProperty = (function (match) {
 //   return true;
 // }
 //
-// var negator = new Negator(matchable);
+// var negator   = negator(matchable);
 // negator.match({"here": "ignored"}); // => false
 // ```
 //
-var Negator = function (matchable) {
-  this.matchable = matchable
-}
-
-Negator.prototype = new Matchable
-
-Negator.prototype.match = function (object) {
+var negator = (function (match) {
+  return function (matchable) {
+    return {
+      matchable: matchable,
+      match: match
+    }
+  }
+})(Matchable(function (object) {
   return !this.matchable.match(object)
-}
+}))
 
 
 
-// ObjectPattern
+// objectPattern
 // -------------
 //
 // Returns the `&&` result of calling the `match` method in each `properties`,
@@ -144,10 +145,10 @@ Negator.prototype.match = function (object) {
 //
 // Usage:
 // ```javascript
-// var property = new ObjectPattern(
-//   new exactProperty("public", true),
-//   new WildcardProperty("value"),
-//   new exactProperty("timestamp", 123456789)
+// var property = objectPattern(
+//   exactProperty("public", true),
+//   wildcardProperty("value"),
+//   exactProperty("timestamp", 123456789)
 // )
 //
 // property.match({
@@ -157,21 +158,26 @@ Negator.prototype.match = function (object) {
 // }) // => true
 // ```
 //
-var ObjectPattern = function () {
-  this.properties = []
-  for (var i = 0, j = arguments.length; i < j; i ++)
-    this.properties.push(arguments[i])
-}
+var objectPattern = (function (match) {
+  return function () {
+    var properties = []
+    var i = 0
+    var length = arguments.length
 
-ObjectPattern.prototype = new Matchable
+    for (; i < length; i ++)
+      properties.push(arguments[i])
 
-
-ObjectPattern.prototype.match = function (object) {
+    return {
+      properties: properties,
+      match: match
+    }
+  }
+})(Matchable(function (object) {
   for (var i = 0, j = this.properties.length; i < j; i ++)
     if (!this.properties[i].match(object)) return false
 
   return true
-}
+}))
 
 
 
@@ -487,8 +493,8 @@ module.exports = {
   Matchable: Matchable,
   wildcardProperty: wildcardProperty,
   exactProperty: exactProperty,
-  Negator: Negator,
-  ObjectPattern: ObjectPattern,
+  negator: negator,
+  objectPattern: objectPattern,
   WildcardValue: WildcardValue,
   TypedValue: TypedValue,
   ArrayPattern: ArrayPattern,
