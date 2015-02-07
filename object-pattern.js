@@ -1,13 +1,17 @@
 // object-pattern
 // ==============
 //
+// ![Codeship status](https://codeship.com/projects/168ec210-8ee6-0132-51af-0a0cf4fe8e66/status?branch=master)
 //
-
+// Object Pattern structures for Node.js
+//
+// Alpha status, documentation is a work in progress.
+//
 // Matchable
 // ---------
 //
-// A common parent for all matchables. The interface that they are supposed to
-// implement (although `Matchable` itself does not) is to expose a `match`
+// A common interface for all matchables. The interface that they are supposed to
+// implement is to expose a `match`
 // method that returns either `true` or `false`.
 //
 var Matchable = function (f) {
@@ -15,6 +19,20 @@ var Matchable = function (f) {
   return f
 }
 
+
+// ArrayMatchable
+// --------------
+//
+// A common interface for all descriptors of `Array` components. `ArrayMatchable`s
+// have a slightly different interface than regular `Matchable`s because they
+// need to send back the chunk of the Array that wasn't consumed by the current
+// pattern so that the `arrayPattern` can forward it to the next
+// `ArrayMatchable`.
+//
+var ArrayMatchable = function (f) {
+  if (f instanceof Function) f.type = ArrayMatchable
+  return f
+}
 
 
 // wildcardProperty
@@ -34,8 +52,11 @@ var Matchable = function (f) {
 // matchPublic.match({"project": "public"}); // => true
 //
 // // Matchable
-// var matchable    = new Matchable();
-// matchable.match  = function (value) { return value === "some value"; };
+// var matchable    = {
+//   match: Matchable(function (value) {
+//     return value === "some value";
+//   })
+// }
 // var matchSomeValue = wildcardProperty(matchable);
 // matchSomeValue({"property": "value"}); // => true
 // ```
@@ -48,7 +69,7 @@ var wildcardProperty = (function (match) {
     }
   }
 })(Matchable(function (object) {
-  if (this.value instanceof Matchable) {
+  if (this.value.match && this.value.match.type === Matchable) {
     for (key in object) if (this.value.match(object[key])) return true }
 
   else {
@@ -76,14 +97,16 @@ var wildcardProperty = (function (match) {
 // exactProperty.match({"project": "public"}); // => true
 //
 // // Matchable
-// var matchable    = new Matchable();
-// matchable.match  = function () { return true } ;
+// var matchable    = {
+//   match: Matchable(function () { return true });
+// }
 // exactProperty    = exactProperty("property", matchable);
 // exactProperty.match({"property": "value"}); // => true
 //
 // // Matchable but property missing
-// var matchable    = new Matchable();
-// matchable.match  = function () { return true };
+// var matchable    = {
+//   match: Matchable(function () { return true })
+// }
 // exactProperty    = exactProperty("project", matchable);
 // exactProperty.match({"property": "value"}); // => false
 // ```
@@ -115,9 +138,10 @@ var exactProperty = (function (match) {
 //
 // Usage:
 // ```javascript
-// var matchable = new Matchable();
-// matchable.match = function () {
-//   return true;
+// var matchable = {
+//   match: Matchable(function () {
+//     return true;
+//   })
 // }
 //
 // var negator   = negator(matchable);
@@ -181,31 +205,33 @@ var objectPattern = (function (match) {
 
 
 
-// WildcardValue
+// wildcardValue
 // -------------
 //
 // Returns always `true` except if the argument is `undefined`.
 //
 // Usage:
 // ```javascript
-// var wildcardValue = new WildcardValue();
+// var wildcardValue = wildcardValue();
 // wildcardValue.match("something"); // => true
 // ```
 //
-var WildcardValue = function () {}
-
-WildcardValue.prototype = new Matchable
-
-WildcardValue.prototype.match = function (object) {
+var wildcardValue = (function (match) {
+  return function () {
+    return {
+      match: match
+    }
+  }
+})(Matchable(function (object) {
   return object !== undefined
-}
+}))
 
 
 
-// TypedValue
+// typedValue
 // ----------
 //
-// If initialized with a `Function`, returns `true` only if the argument if
+// If initialized with a `Function`, returns `true` only if the argument is
 // `instanceof` the `Function`.
 //
 // If initialized with the following `String` arguments, it returns `true`:
@@ -225,20 +251,19 @@ WildcardValue.prototype.match = function (object) {
 //
 // ```javascript
 // var Type = function () {};
-// var typedValue = new TypedValue(Type);
+// var typedValue = typedValue(Type);
 //
 // typedValue.match(new Type()) // => true
 // ```
 //
-var TypedValue = function (type) {
-  this.type = type
-}
-
-
-TypedValue.prototype = new Matchable
-
-
-TypedValue.prototype.match = function (object) {
+var typedValue = (function (match) {
+  return function (type) {
+    return {
+      type: type,
+      match: match
+    }
+  }
+})(Matchable(function (object) {
   switch (this.type) {
     case 'array':
       return JSON.stringify(object).substring(0, 1) === '['
@@ -263,11 +288,11 @@ TypedValue.prototype.match = function (object) {
     default:
       return object instanceof this.type
   }
-}
+}))
 
 
 
-// ArrayPattern
+// arrayPattern
 // ------------
 //
 // Handles `ArrayMatchable`s, combining their results to return a final
@@ -276,27 +301,35 @@ TypedValue.prototype.match = function (object) {
 // Usage:
 //
 // ```javascript
-// var arrayMatcher = new ArrayPattern(
-//   new ArrayElement( new TypedValue( 'number' ) ),
+// var arrayMatcher = arrayPattern(
+//   arrayElement( typedValue( 'number' ) ),
 //   'user',
-//   new ArrayWildcard(),
-//   new ArrayEllipsis( 9 )
+//   arrayWildcard(),
+//   arrayEllipsis( 9 )
 // );
 //
 // arrayMatcher.match([6, 'user', 9]); // => false
 // arrayMatcher.match([-56.2, 'user', 'extra', 9]); // => true
 // ```
 //
-var ArrayPattern = function () {
-  this.matchables = []
+var arrayPattern = (function (match) {
+  return function () {
+    var matchables = []
 
-  for (var i = 0; i < arguments.length; i ++)
-    this.matchables.push(arguments[i])
-}
+    for (var i = 0; i < arguments.length; i ++)
+      matchables.push(arguments[i])
 
-ArrayPattern.prototype = new Matchable
+    return {
+      matchables: matchables,
+      match: match
+    }
+  }
+})(Matchable(function (array) {
+  var filteredArray = undefined
+  var result = undefined
+  var i = undefined
+  var length = undefined
 
-ArrayPattern.prototype.match = function (array) {
   if (!(array instanceof Array))
     return false
 
@@ -306,12 +339,14 @@ ArrayPattern.prototype.match = function (array) {
   else if (this.matchables.length === 0 && array.length === 0)
     return true
 
-  var filteredArray = array
-  var result = {}
-  var i = 0
+  filteredArray = array
+  result = {}
+  i = 0
+  length = this.matchables.length
 
-  for (; i < this.matchables.length; i ++) {
-    if (this.matchables[i] instanceof ArrayMatchable) {
+  for (; i < length; i ++) {
+    if (this.matchables[i].match &&
+        this.matchables[i].match.type === ArrayMatchable) {
       result = this.matchables[i].match(filteredArray)
 
       if (result.matched === false)
@@ -333,24 +368,14 @@ ArrayPattern.prototype.match = function (array) {
   }
 
   return result.matched && filteredArray.length === 0
-}
+}))
 
 
 
-// ArrayMatchable
-// --------------
-//
-// A common parent for all descriptors of `Array` components. `ArrayMatchable`s
-// have a slightly different interface than regular `Matchable`s because they
-// need to send back the chunk of the Array that wasn't consumed by the current
-// pattern so that the `ArrayPattern` can forward it to the next
-// `ArrayMatchable`.
-//
-var ArrayMatchable = function () {}
 
 
 
-// ArrayElement
+// arrayElement
 // ------------
 //
 // Encapsulated any Matchable. Forwards the content of the first element
@@ -362,31 +387,30 @@ var ArrayMatchable = function () {}
 // Usage:
 //
 // ```javascript
-// var arrayElement = new ArrayElement(new TypedValue('string'));
+// var arrayElement = arrayElement(typedValue('string'));
 //
 // var result = arrayElement.match(['text', 'extra']);
 // result.matched; // => true
 // result.unmatched; // => ['extra']
 // ```
 //
-var ArrayElement = function (matchable) {
-  this.matchable = matchable
-}
-
-
-ArrayElement.prototype = new ArrayMatchable
-
-
-ArrayElement.prototype.match = function (array) {
+var arrayElement = (function (match) {
+  return function (matchable) {
+    return {
+      matchable: matchable,
+      match: match
+    }
+  }
+})(ArrayMatchable(function (array) {
   return {
     matched: this.matchable.match(array[0]),
     unmatched: array.slice(1)
   }
-}
+}))
 
 
 
-// ArrayWildcard
+// arrayWildcard
 // -------------
 //
 // Returns `true` unless there is nothing in the `Array`. Removes the first
@@ -395,46 +419,46 @@ ArrayElement.prototype.match = function (array) {
 // Usage:
 //
 // ```javascript
-// var arrayWildcard = new ArrayWildcard();
+// var arrayWildcard = new arrayWildcard();
 //
 // var result = arrayWildcard.match(['anything', 'extra']);
 // result.matched; // => true
 // result.unmatched; // => ['extra']
 // ```
 //
-var ArrayWildcard = function () {}
-
-
-ArrayWildcard.prototype = new ArrayMatchable
-
-
-ArrayWildcard.prototype.match = function (array) {
+var arrayWildcard = (function (match) {
+  return function () {
+    return {
+      match: match
+    }
+  }
+})(ArrayMatchable(function (array) {
   return {
     matched: array.length > 0,
     unmatched: array.slice(1)
   }
-}
+}))
 
 
 
-// ArrayEllipsis
+// arrayEllipsis
 // -------------
 //
-// The `ArrayEllipsis` represents a variable length pattern, and it's behavior
+// The `arrayEllipsis` represents a variable length pattern, and it's behavior
 // depends on how it is configured.
 //
-// 1. Passing no arguments to the `ArrayEllipsis` will create a _catch all_
+// 1. Passing no arguments to the `arrayEllipsis` will create a _catch all_
 //    pattern that will match anything, even no elements at all.
-// 2. Passing any `Matchable` to the `ArrayEllipsis` will cause it to
+// 2. Passing any `Matchable` to the `arrayEllipsis` will cause it to
 //    sequentially probe each element for a match with the `Matchable`. That
 //    `Matchable` is called the _termination_ of the ellipsis pattern. If a
-//    match happens, the `ArrayEllipsis` will stop, return `true` in `matched`
+//    match happens, the `arrayEllipsis` will stop, return `true` in `matched`
 //    and the remainings of the `Array` in `unmatched`.
 //
 // Usage:
 //
 // ```javascript
-// var arrayEllipsis = new ArrayEllipsis();
+// var ellipsis = arrayEllipsis();
 //
 // var result = arrayEllipsis.match(['element', 2, {}]);
 // result.matched; // => true
@@ -444,29 +468,29 @@ ArrayWildcard.prototype.match = function (array) {
 // With termination:
 //
 // ```javascript
-// var arrayEllipsis = new ArrayEllipsis(new TypedValue('string'));
+// var ellipsis = arrayEllipsis(typedValue('string'));
 //
-// var result = arrayEllipsis.match([2, 4, 'text', 'extra']);
+// var result = ellipsis.match([2, 4, 'text', 'extra']);
 // result.matched; // => true
 // result.unmatched; // => ['extra']
 // ```
 //
-var ArrayEllipsis = function (termination) {
-  this.termination = termination
-}
+var arrayEllipsis = (function (match) {
+  return function (termination) {
+    return {
+      termination: termination,
+      match: match
+    }
+  }
+})(ArrayMatchable(function (array) {
 
-
-ArrayEllipsis.prototype = new ArrayMatchable
-
-
-ArrayEllipsis.prototype.match = function (array) {
   if ( ! this.termination)
     return {
       matched: true,
       unmached: [] }
 
   for (var index = 0; index < array.length; index ++) {
-    if (this.termination instanceof Matchable) {
+    if (this.termination.match && this.termination.match.type === Matchable) {
       if (this.termination.match(array[index]))
         return {
           matched: true,
@@ -485,21 +509,20 @@ ArrayEllipsis.prototype.match = function (array) {
     matched: false,
     unmatched: []
   }
-}
-
+}))
 
 
 module.exports = {
   Matchable: Matchable,
-  wildcardProperty: wildcardProperty,
+  ArrayMatchable: ArrayMatchable,
+  arrayElement: arrayElement,
+  arrayEllipsis: arrayEllipsis,
+  arrayPattern: arrayPattern,
+  arrayWildcard: arrayWildcard,
   exactProperty: exactProperty,
   negator: negator,
   objectPattern: objectPattern,
-  WildcardValue: WildcardValue,
-  TypedValue: TypedValue,
-  ArrayPattern: ArrayPattern,
-  ArrayMatchable: ArrayMatchable,
-  ArrayElement: ArrayElement,
-  ArrayWildcard: ArrayWildcard,
-  ArrayEllipsis: ArrayEllipsis
+  typedValue: typedValue,
+  wildcardProperty: wildcardProperty,
+  wildcardValue: wildcardValue
 }

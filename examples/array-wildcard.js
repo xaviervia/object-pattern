@@ -1,31 +1,31 @@
 var example = require("washington")
 var assert  = require("assert")
 
-var ArrayWildcard = require("../object-pattern").ArrayWildcard
+var arrayWildcard = require("../object-pattern").arrayWildcard
 var ArrayMatchable = require("../object-pattern").ArrayMatchable
 
 
 
-example("ArrayWildcard is a ArrayMatchable", function () {
-  assert( new ArrayWildcard instanceof ArrayMatchable )
+example("arrayWildcard's match has type ArrayMatchable", function () {
+  assert( arrayWildcard().match.type === ArrayMatchable )
 })
 
 
 
-example("ArrayWildcard: false if empty", function () {
-  assert( ! new ArrayWildcard().match([]).matched )
+example("arrayWildcard: false if empty", function () {
+  assert( ! arrayWildcard().match([]).matched )
 })
 
 
 
-example("ArrayWildcard: true if non empty", function () {
-  assert( new ArrayWildcard().match(['something']).matched )
+example("arrayWildcard: true if non empty", function () {
+  assert( arrayWildcard().match(['something']).matched )
 })
 
 
 
-example("ArrayWildcard: unmatched has the rest of the array", function () {
-  var result = new ArrayWildcard().match(['more', 'than', 'one'])
+example("arrayWildcard: unmatched has the rest of the array", function () {
+  var result = arrayWildcard().match(['more', 'than', 'one'])
   assert.equal( result.unmatched.length, 2 )
   assert.equal( result.unmatched[0], 'than' )
   assert.equal( result.unmatched[1], 'one' )

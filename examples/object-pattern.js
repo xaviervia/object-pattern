@@ -18,13 +18,13 @@ example("objectPattern: AND of three properties", function () {
   var property = objectPattern(
     exactProperty("public", true),
     wildcardProperty("value"),
-    exactProperty("timestamp", 123456789)
+    exactProperty("timestamp", "123456789")
   )
 
   assert(property.match({
     "public": true,
     "anyProp": "value",
-    "timestamp": 123456789
+    "timestamp": "123456789"
   }))
 })
 

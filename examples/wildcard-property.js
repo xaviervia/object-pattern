@@ -31,11 +31,13 @@ example("wildcardProperty + number value #match: correct value, true", function 
 
 
 example("wildcardProperty + Matchable value #match: delegate, send values to Matchable (propagate false)", function () {
-  var matchable = new Matchable()
+  var matchable = {
+    match: Matchable(function (match) {
+      (this.match.called = this.match.called || {})[match] = true
+      return false
+    })
+  }
   var toMatch   = {"something": "value", "other": "other-value"}
-  matchable.match = function (match) {
-    (this.match.called = this.match.called || {})[match] = true
-    return false }
 
   assert( ! wildcardProperty(matchable).match(toMatch) )
 
@@ -46,11 +48,13 @@ example("wildcardProperty + Matchable value #match: delegate, send values to Mat
 
 
 example("wildcardProperty + Matchable value #match: delegate, send values to Matchable (propagate true)", function () {
-  var matchable = new Matchable()
+  var matchable = {
+    match: Matchable(function (match) {
+      (this.match.called = this.match.called || {})[match] = true
+      return match === "value"
+    })
+  }
   var toMatch   = {"something": "value", "other": "other-value"}
-  matchable.match = function (match) {
-    (this.match.called = this.match.called || {})[match] = true
-    return match === "value" }
 
   assert( wildcardProperty(matchable).match(toMatch) )
 })

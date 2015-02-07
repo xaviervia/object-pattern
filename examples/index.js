@@ -8,3 +8,5 @@ require("./object-pattern")
 require("./typed-value")
 require("./wildcard-property")
 require("./wildcard-value")
+
+require("washington")("Use `tags` property in the object instead")

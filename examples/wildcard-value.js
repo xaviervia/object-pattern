@@ -1,25 +1,23 @@
 var example = require("washington")
 var assert  = require("assert")
 
-var WildcardValue = require("../object-pattern").WildcardValue
+var wildcardValue = require("../object-pattern").wildcardValue
 var Matchable = require("../object-pattern").Matchable
 
 
 
-example("WildcardValue is a Matchable", function () {
-  assert(new WildcardValue instanceof Matchable)
+example("wildcardValue's match has type Matchable", function () {
+  assert(wildcardValue().match.type === Matchable)
 })
 
 
 
-example("WildcardValue: true if not undefined", function () {
-  assert(
-    new WildcardValue().match("anything") )
+example("wildcardValue: true if not undefined", function () {
+  assert( wildcardValue().match("anything") )
 })
 
 
 
-example("WildcardValue: false if undefined", function () {
-  assert(
-    ! new WildcardValue().match())
+example("wildcardValue: false if undefined", function () {
+  assert( ! wildcardValue().match())
 })

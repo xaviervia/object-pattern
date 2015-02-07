@@ -1,28 +1,29 @@
 var example = require("washington")
 var assert  = require("assert")
 
-var ArrayElement = require("../object-pattern").ArrayElement
+var arrayElement = require("../object-pattern").arrayElement
 var ArrayMatchable = require("../object-pattern").ArrayMatchable
 var Matchable = require("../object-pattern").Matchable
 
 
 
-example("ArrayElement is ArrayMatchable", function () {
-  assert( new ArrayElement instanceof ArrayMatchable )
+example("arrayElement's match has type ArrayMatchable", function () {
+  assert( arrayElement().match.type === ArrayMatchable )
 })
 
 
 
-example("ArrayElement: encapsulates any Matchable", function () {
-  var matchable = new Matchable
-  var arrayElement = new ArrayElement(matchable)
-  var result = undefined
-  matchable.match = function (argument) {
-    this.match.argument = argument
-    return 'matched'
+example("arrayElement: encapsulates any Matchable", function () {
+  var matchable = {
+    match: Matchable(function (argument) {
+      this.match.argument = argument
+      return 'matched'
+    })
   }
+  var element = arrayElement(matchable)
+  var result = undefined
 
-  result = arrayElement.match(['something', 'extra'])
+  result = element.match(['something', 'extra'])
 
   assert.equal( result.matched, 'matched' )
   assert.equal( matchable.match.argument, 'something' )
