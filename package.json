@@ -1,6 +1,6 @@
 {
   "name": "object-pattern",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Object Pattern structures for Node.js",
   "main": "object-pattern.js",
   "scripts": {
