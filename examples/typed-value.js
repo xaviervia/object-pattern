@@ -7,19 +7,21 @@ var Matchable = require("../object-pattern").Matchable
 
 
 example("typedValue's match has type Matchable", function () {
-  assert(typedValue().match.type === Matchable)
+  assert(typedValue().tags.indexOf(Matchable) > -1)
 })
 
 
 
 example("typedValue: true if value is of type", function () {
-  assert(typedValue(Matchable).match(new Matchable))
+  var LocalType = function () {}
+  assert(typedValue(LocalType).match(new LocalType))
 })
 
 
 
 example("typedValue: false if value is not of type", function () {
-  assert( ! typedValue(typedValue).match(new Matchable))
+  var LocalType = function () {}
+  assert( ! typedValue(typedValue).match(new LocalType))
 })
 
 

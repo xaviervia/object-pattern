@@ -41,9 +41,10 @@ matchPublic.match({"project": "public"}); // => true
 
 // Matchable
 var matchable    = {
-  match: Matchable(function (value) {
+  match: function (value) {
     return value === "some value";
-  })
+  },
+  tags: [Matchable]
 }
 var matchSomeValue = wildcardProperty(matchable);
 matchSomeValue({"property": "value"}); // => true
@@ -67,14 +68,16 @@ exactProperty.match({"project": "public"}); // => true
 
 // Matchable
 var matchable    = {
-  match: Matchable(function () { return true });
+  match: function () { return true },
+  tags: [Matchable]
 }
 exactProperty    = exactProperty("property", matchable);
 exactProperty.match({"property": "value"}); // => true
 
 // Matchable but property missing
 var matchable    = {
-  match: Matchable(function () { return true })
+  match: function () { return true },
+  tags: [Matchable]
 }
 exactProperty    = exactProperty("project", matchable);
 exactProperty.match({"property": "value"}); // => false
@@ -88,9 +91,10 @@ Delegates the matching to the sent matchable and negates the result.
 Usage:
 ```javascript
 var matchable = {
-  match: Matchable(function () {
+  match: function () {
     return true;
-  })
+  },
+  tags: [Matchable]
 }
 
 var negator   = negator(matchable);
@@ -180,7 +184,7 @@ arrayMatcher.match([-56.2, 'user', 'extra', 9]); // => true
 arrayElement
 ------------
 
-Encapsulated any Matchable. Forwards the content of the first element
+Encapsulates any Matchable. Forwards the content of the first element
 of the argument `Array` to the `Matchable`'s `match` and returns:
 
 - `"matched"`: the result of `match`

@@ -7,7 +7,7 @@ var Matchable = require("../object-pattern").Matchable
 
 
 example("exactProperty match has type Matchable", function () {
-  assert(exactProperty().match.type === Matchable)
+  assert(exactProperty().tags.indexOf(Matchable) > -1 )
 })
 
 
@@ -32,10 +32,11 @@ example("exactProperty #match: false if property is not there", function () {
 
 example("exactProperty + Matchable #match: delegates to matchable", function () {
   var matchable = {
-    match: Matchable(function (value) {
+    match: function (value) {
       this.match.calledWith = value
       return true
-    })
+    },
+    tags: [Matchable]
   }
 
   assert(exactProperty("property", matchable).match({"property": "value"}))

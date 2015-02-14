@@ -7,7 +7,7 @@ var Matchable = require("../object-pattern").Matchable
 
 
 example("wildcardValue's match has type Matchable", function () {
-  assert(wildcardValue().match.type === Matchable)
+  assert(wildcardValue().tags.indexOf(Matchable) > -1)
 })
 
 

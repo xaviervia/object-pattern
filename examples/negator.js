@@ -7,17 +7,20 @@ var Matchable = require("../object-pattern").Matchable
 
 
 example("negator match has type Matchable", function () {
-  assert(negator().match.type === Matchable)
+  assert(negator().tags.indexOf(Matchable) > -1)
 })
 
 
 
 example("negator: delegates and negates", function () {
-  var matchable = new Matchable
+  var matchable = {
+    tags: [Matchable],
+    match: function (object) {
+      this.match.calledWith = object
+      return false
+    }
+  }
   var theObject = {}
-  matchable.match = function (object) {
-    this.match.calledWith = object
-    return false }
 
   assert( negator(matchable).match(theObject) )
 

@@ -7,7 +7,7 @@ var wildcardProperty = require("../object-pattern").wildcardProperty
 
 
 example("wildcardProperty match has type Matchable", function () {
-  assert(wildcardProperty().match.type === Matchable)
+  assert(wildcardProperty().tags.indexOf(Matchable) > -1)
 })
 
 
@@ -32,10 +32,11 @@ example("wildcardProperty + number value #match: correct value, true", function 
 
 example("wildcardProperty + Matchable value #match: delegate, send values to Matchable (propagate false)", function () {
   var matchable = {
-    match: Matchable(function (match) {
+    match: function (match) {
       (this.match.called = this.match.called || {})[match] = true
       return false
-    })
+    },
+    tags: [Matchable]
   }
   var toMatch   = {"something": "value", "other": "other-value"}
 
@@ -49,10 +50,11 @@ example("wildcardProperty + Matchable value #match: delegate, send values to Mat
 
 example("wildcardProperty + Matchable value #match: delegate, send values to Matchable (propagate true)", function () {
   var matchable = {
-    match: Matchable(function (match) {
+    match: function (match) {
       (this.match.called = this.match.called || {})[match] = true
       return match === "value"
-    })
+    },
+    tags: [Matchable]
   }
   var toMatch   = {"something": "value", "other": "other-value"}
 

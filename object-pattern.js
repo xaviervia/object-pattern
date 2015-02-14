@@ -14,9 +14,9 @@
 // implement is to expose a `match`
 // method that returns either `true` or `false`.
 //
-var Matchable = function (f) {
-  if (f instanceof Function) f.type = Matchable
-  return f
+var Matchable = function (o) {
+  (o.tags = o.tags || []).push(Matchable)
+  return o
 }
 
 
@@ -29,9 +29,9 @@ var Matchable = function (f) {
 // pattern so that the `arrayPattern` can forward it to the next
 // `ArrayMatchable`.
 //
-var ArrayMatchable = function (f) {
-  if (f instanceof Function) f.type = ArrayMatchable
-  return f
+var ArrayMatchable = function (o) {
+  (o.tags = o.tags || []).push(ArrayMatchable)
+  return o
 }
 
 
@@ -53,9 +53,10 @@ var ArrayMatchable = function (f) {
 //
 // // Matchable
 // var matchable    = {
-//   match: Matchable(function (value) {
+//   match: function (value) {
 //     return value === "some value";
-//   })
+//   },
+//   tags: [Matchable]
 // }
 // var matchSomeValue = wildcardProperty(matchable);
 // matchSomeValue({"property": "value"}); // => true
@@ -65,18 +66,19 @@ var wildcardProperty = (function (match) {
   return function (value) {
     return {
       value: value,
-      match: match
+      match: match,
+      tags: [Matchable]
     }
   }
-})(Matchable(function (object) {
-  if (this.value.match && this.value.match.type === Matchable) {
+})(function (object) {
+  if (this.value.tags && this.value.tags.indexOf(Matchable) > -1) {
     for (key in object) if (this.value.match(object[key])) return true }
 
   else {
     for (key in object) if (object[key] === this.value) return true }
 
   return false
-}))
+})
 
 
 
@@ -98,14 +100,16 @@ var wildcardProperty = (function (match) {
 //
 // // Matchable
 // var matchable    = {
-//   match: Matchable(function () { return true });
+//   match: function () { return true },
+//   tags: [Matchable]
 // }
 // exactProperty    = exactProperty("property", matchable);
 // exactProperty.match({"property": "value"}); // => true
 //
 // // Matchable but property missing
 // var matchable    = {
-//   match: Matchable(function () { return true })
+//   match: function () { return true },
+//   tags: [Matchable]
 // }
 // exactProperty    = exactProperty("project", matchable);
 // exactProperty.match({"property": "value"}); // => false
@@ -116,18 +120,18 @@ var exactProperty = (function (match) {
     return {
       name: name,
       value: value,
-      match: match
+      match: match,
+      tags: [Matchable]
     }
   }
-})(Matchable(function (object) {
-  if (this.value.match instanceof Function &&
-      this.value.match.type === Matchable)
+})(function (object) {
+  if (this.value.tags && this.value.tags.indexOf(Matchable) > -1)
     return  object[this.name] &&
             this.value.match(object[this.name])
 
   return  object[this.name] &&
           object[this.name] === this.value
-}))
+})
 
 
 
@@ -139,9 +143,10 @@ var exactProperty = (function (match) {
 // Usage:
 // ```javascript
 // var matchable = {
-//   match: Matchable(function () {
+//   match: function () {
 //     return true;
-//   })
+//   },
+//   tags: [Matchable]
 // }
 //
 // var negator   = negator(matchable);
@@ -152,12 +157,13 @@ var negator = (function (match) {
   return function (matchable) {
     return {
       matchable: matchable,
-      match: match
+      match: match,
+      tags: [Matchable]
     }
   }
-})(Matchable(function (object) {
+})(function (object) {
   return !this.matchable.match(object)
-}))
+})
 
 
 
@@ -193,15 +199,16 @@ var objectPattern = (function (match) {
 
     return {
       properties: properties,
-      match: match
+      match: match,
+      tags: [Matchable]
     }
   }
-})(Matchable(function (object) {
+})(function (object) {
   for (var i = 0, j = this.properties.length; i < j; i ++)
     if (!this.properties[i].match(object)) return false
 
   return true
-}))
+})
 
 
 
@@ -219,12 +226,13 @@ var objectPattern = (function (match) {
 var wildcardValue = (function (match) {
   return function () {
     return {
-      match: match
+      match: match,
+      tags: [Matchable]
     }
   }
-})(Matchable(function (object) {
+})(function (object) {
   return object !== undefined
-}))
+})
 
 
 
@@ -260,10 +268,11 @@ var typedValue = (function (match) {
   return function (type) {
     return {
       type: type,
-      match: match
+      match: match,
+      tags: [Matchable]
     }
   }
-})(Matchable(function (object) {
+})(function (object) {
   switch (this.type) {
     case 'array':
       return JSON.stringify(object).substring(0, 1) === '['
@@ -288,7 +297,7 @@ var typedValue = (function (match) {
     default:
       return object instanceof this.type
   }
-}))
+})
 
 
 
@@ -321,10 +330,11 @@ var arrayPattern = (function (match) {
 
     return {
       matchables: matchables,
-      match: match
+      match: match,
+      tags: [Matchable]
     }
   }
-})(Matchable(function (array) {
+})(function (array) {
   var filteredArray = undefined
   var result = undefined
   var i = undefined
@@ -345,8 +355,8 @@ var arrayPattern = (function (match) {
   length = this.matchables.length
 
   for (; i < length; i ++) {
-    if (this.matchables[i].match &&
-        this.matchables[i].match.type === ArrayMatchable) {
+    if (this.matchables[i].tags &&
+        this.matchables[i].tags.indexOf(ArrayMatchable) > -1) {
       result = this.matchables[i].match(filteredArray)
 
       if (result.matched === false)
@@ -368,7 +378,7 @@ var arrayPattern = (function (match) {
   }
 
   return result.matched && filteredArray.length === 0
-}))
+})
 
 
 
@@ -378,7 +388,7 @@ var arrayPattern = (function (match) {
 // arrayElement
 // ------------
 //
-// Encapsulated any Matchable. Forwards the content of the first element
+// Encapsulates any Matchable. Forwards the content of the first element
 // of the argument `Array` to the `Matchable`'s `match` and returns:
 //
 // - `"matched"`: the result of `match`
@@ -398,15 +408,16 @@ var arrayElement = (function (match) {
   return function (matchable) {
     return {
       matchable: matchable,
-      match: match
+      match: match,
+      tags: [ArrayMatchable]
     }
   }
-})(ArrayMatchable(function (array) {
+})(function (array) {
   return {
     matched: this.matchable.match(array[0]),
     unmatched: array.slice(1)
   }
-}))
+})
 
 
 
@@ -429,15 +440,16 @@ var arrayElement = (function (match) {
 var arrayWildcard = (function (match) {
   return function () {
     return {
-      match: match
+      match: match,
+      tags: [ArrayMatchable]
     }
   }
-})(ArrayMatchable(function (array) {
+})(function (array) {
   return {
     matched: array.length > 0,
     unmatched: array.slice(1)
   }
-}))
+})
 
 
 
@@ -479,10 +491,11 @@ var arrayEllipsis = (function (match) {
   return function (termination) {
     return {
       termination: termination,
-      match: match
+      match: match,
+      tags: [ArrayMatchable]
     }
   }
-})(ArrayMatchable(function (array) {
+})(function (array) {
 
   if ( ! this.termination)
     return {
@@ -490,7 +503,7 @@ var arrayEllipsis = (function (match) {
       unmached: [] }
 
   for (var index = 0; index < array.length; index ++) {
-    if (this.termination.match && this.termination.match.type === Matchable) {
+    if (this.termination.tags && this.termination.tags.indexOf(Matchable) > -1) {
       if (this.termination.match(array[index]))
         return {
           matched: true,
@@ -509,7 +522,7 @@ var arrayEllipsis = (function (match) {
     matched: false,
     unmatched: []
   }
-}))
+})
 
 
 module.exports = {

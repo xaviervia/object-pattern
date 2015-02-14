@@ -7,8 +7,8 @@ var Matchable = require("../object-pattern").Matchable
 
 
 
-example("arrayPattern's match has type Matchable", function () {
-  assert( arrayPattern().match.type === Matchable )
+example("arrayPattern is tagged as Matchable", function () {
+  assert( arrayPattern().tags.indexOf(Matchable) > -1 )
 })
 
 
@@ -33,13 +33,14 @@ example("arrayPattern + undefined: false for non empty array", function () {
 
 example("arrayPattern + [ArrayMatchable]: forward elements and return `matched`", function () {
   var arrayMatchable = {
-    match: ArrayMatchable(function () {
+    match: function () {
       this.match.called = arguments
       return {
         matched: 'matched',
         unmatched: []
       }
-    })
+    },
+    tags: [ArrayMatchable]
   }
 
   var result = arrayPattern(arrayMatchable).match(['something'])
@@ -52,12 +53,13 @@ example("arrayPattern + [ArrayMatchable]: forward elements and return `matched`"
 
 example("arrayPattern + [AM]: remaining elements mean not a match", function () {
   var arrayMatchable = {
-    match: ArrayMatchable(function () {
+    match: function () {
       return {
         matched: true,
         unmatched: [ 'element!' ]
       }
-    })
+    },
+    tags: [ArrayMatchable]
   }
 
   assert( ! arrayPattern(arrayMatchable).match(['something']) )
@@ -67,19 +69,21 @@ example("arrayPattern + [AM]: remaining elements mean not a match", function () 
 
 example("arrayPattern + [AM, AM]: remaining elements are send to the next", function () {
   var firstMatchable = {
-    match: ArrayMatchable(function () {
+    match: function () {
       return {
         matched: true,
         unmatched: remaining }
-    })
+    },
+    tags: [ArrayMatchable]
   }
   var secondMatchable = {
-    match: ArrayMatchable(function () {
+    match: function () {
       this.match.called = arguments
       return {
         matched: true,
         unmatched: ['irrelevant'] }
-    })
+    },
+    tags: [ArrayMatchable]
   }
   var remaining = ['some', 'remaining']
 
@@ -92,15 +96,17 @@ example("arrayPattern + [AM, AM]: remaining elements are send to the next", func
 
 example("arrayPattern + [AM, AM]: next is not called if first is false", function () {
   var firstMatchable = {
-    match: ArrayMatchable(function () {
+    match: function () {
       return {
         matched: false,
         unmatched: []
       }
-    })
+    },
+    tags: [ArrayMatchable]
   }
   var secondMatchable = {
-    match: ArrayMatchable(function () { this.called = true })
+    match: function () { this.called = true },
+    tags: [ArrayMatchable]
   }
 
   assert( ! arrayPattern(firstMatchable, secondMatchable).match(['']) )
@@ -111,13 +117,14 @@ example("arrayPattern + [AM, AM]: next is not called if first is false", functio
 
 example("arrayPattern[non-AM, AM]: true when existing, sends the rest to the next AM", function () {
   var arrayMatchable = {
-    match: ArrayMatchable(function (argument) {
+    match: function (argument) {
       this.match.argument = argument
       return {
         matched: true,
         unmatched: []
       }
-    })
+    },
+    tags: [ArrayMatchable]
   }
   var arrayMatcher = arrayPattern('exactly', arrayMatchable)
 

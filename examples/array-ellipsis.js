@@ -2,13 +2,14 @@ var example = require("washington")
 var assert  = require("assert")
 
 var arrayEllipsis = require("../object-pattern").arrayEllipsis
-var ArrayMatchable = require("../object-pattern").ArrayMatchable
 var typedValue = require("../object-pattern").typedValue
 
+var ArrayMatchable = require("../object-pattern").ArrayMatchable
 
 
-example("arrayEllipsis's match has type ArrayMatchable", function () {
-  assert( arrayEllipsis().match.type === ArrayMatchable )
+
+example("arrayEllipsis is tagged as ArrayMatchable", function () {
+  assert( arrayEllipsis().tags.indexOf(ArrayMatchable) > -1 )
 })
 
 

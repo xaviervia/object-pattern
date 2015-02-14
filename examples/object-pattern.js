@@ -9,7 +9,7 @@ var wildcardProperty = require("../object-pattern").wildcardProperty
 
 
 example("objectPattern's match has type Matchable", function () {
-  assert(objectPattern().match.type === Matchable)
+  assert(objectPattern().tags.indexOf(Matchable) > -1)
 })
 
 

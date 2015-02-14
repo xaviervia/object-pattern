@@ -7,7 +7,7 @@ var ArrayMatchable = require("../object-pattern").ArrayMatchable
 
 
 example("arrayWildcard's match has type ArrayMatchable", function () {
-  assert( arrayWildcard().match.type === ArrayMatchable )
+  assert( arrayWildcard().tags.indexOf(ArrayMatchable) > -1 )
 })
 
 
