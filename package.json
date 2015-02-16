@@ -4,6 +4,7 @@
   "description": "Object Pattern structures for Node.js",
   "main": "object-pattern.js",
   "scripts": {
+    "doc": "locco --adapter=markdown --source=*.js --adapter-readme=object-pattern.js",
     "test": "washington examples"
   },
   "repository": {
@@ -21,6 +22,8 @@
     "url": "https://github.com/xaviervia/object-pattern/issues"
   },
   "devDependencies": {
+    "locco": "^1.0.2",
+    "locco-markdown": "0.0.2",
     "washington": "0.7.2"
   },
   "homepage": "https://github.com/xaviervia/object-pattern"
