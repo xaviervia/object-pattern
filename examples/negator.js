@@ -1,5 +1,4 @@
 var example = require("washington")
-var assert  = require("assert")
 
 var Negator = require("../object-pattern").Negator
 var Matchable = require("../object-pattern").Matchable
@@ -7,7 +6,7 @@ var Matchable = require("../object-pattern").Matchable
 
 
 example("Negator is a Matchable", function () {
-  assert(new Negator instanceof Matchable)
+  return new Negator instanceof Matchable
 })
 
 
@@ -19,10 +18,6 @@ example("Negator: delegates and negates", function () {
     this.match.calledWith = object
     return false }
 
-  assert(
-    new Negator(matchable)
-      .match(theObject) )
-
-  assert.equal(
-    matchable.match.calledWith, theObject)
+  return  new Negator(matchable).match(theObject) &&
+          matchable.match.calledWith === theObject
 })

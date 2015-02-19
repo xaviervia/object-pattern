@@ -1,5 +1,4 @@
 var example = require("washington")
-var assert  = require("assert")
 
 var Matchable = require("../object-pattern").Matchable
 var WildcardProperty = require("../object-pattern").WildcardProperty
@@ -7,25 +6,19 @@ var WildcardProperty = require("../object-pattern").WildcardProperty
 
 
 example("WildcardProperty + string value #match: correct value, true", function () {
-  assert(
-    new WildcardProperty("value")
-    .match({"something": "value"}) )
+  return new WildcardProperty("value").match({"something": "value"})
 })
 
 
 
 example("WildcardProperty + string value #match: incorrect value, false", function () {
-  assert(
-    ! new WildcardProperty("value")
-    .match({"something": "not-value"}) )
+  return ! new WildcardProperty("value").match({"something": "not-value"})
 })
 
 
 
 example("WildcardProperty + number value #match: correct value, true", function () {
-  assert(
-    new WildcardProperty(4)
-    .match({"otherThing": 4}) )
+  return new WildcardProperty(4).match({"otherThing": 4})
 })
 
 
@@ -37,12 +30,9 @@ example("WildcardProperty + Matchable value #match: delegate, send values to Mat
     (this.match.called = this.match.called || {})[match] = true
     return false }
 
-    assert(
-      ! new WildcardProperty(matchable)
-      .match(toMatch) )
-
-      assert(matchable.match.called["value"])
-      assert(matchable.match.called["other-value"])
+  return  ! new WildcardProperty(matchable).match(toMatch) &&
+          matchable.match.called["value"] &&
+          matchable.match.called["other-value"]
 })
 
 
@@ -54,7 +44,5 @@ example("WildcardProperty + Matchable value #match: delegate, send values to Mat
     (this.match.called = this.match.called || {})[match] = true
     return match === "value" }
 
-    assert(
-      new WildcardProperty(matchable)
-      .match(toMatch) )
+  return new WildcardProperty(matchable).match(toMatch)
 })
