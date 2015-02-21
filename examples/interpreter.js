@@ -9,65 +9,59 @@ var TypedValue = require("../object-pattern").TypedValue
 var ArrayPattern = require("../object-pattern").ArrayPattern
 
 var Interpreter = function (source) {
-  this.pattern = new ObjectPattern
-
-  this.object(source)
+  this.pattern = this.object(source)
 }
 
 
 Interpreter.prototype.object = function (source) {
   var buffer = ""
+  var deepness = 0
+  var object = new ObjectPattern
 
   source.split("").forEach(function (character, index) {
-    if (character === ",") {
-      this.property(buffer)
+    if (character === "," && deepness === 0) {
+      object.properties.push(this.property(buffer))
       buffer = ""
     }
 
-    else buffer += character
+    else
+      buffer += character
+
+    if (character === "(") deepness ++
+    if (character === ")") {
+      deepness --
+      if (deepness === 0) {
+        object.properties.push(this.property(buffer))
+        buffer = ""
+      }
+    }
 
     if (index + 1 === source.length)
-      this.property(buffer)
-
+      object.properties.push(this.property(buffer))
   }.bind(this))
+
+  return object
 }
 
 
 Interpreter.prototype.property = function (source) {
   var buffer        = ""
-  var propertyName  = undefined
-  var propertyValue = undefined
-
-  source.split("").forEach(function (character, index) {
-    if (character === ":") {
-      propertyName  = buffer
-      buffer        = ""
-    }
-
-    else buffer += character
-
-    if (index + 1 === source.length)
-      propertyValue = buffer
-  }.bind(this))
-
-  propertyValue = this.value(propertyValue)
+  var deepness      = 0
+  var propertyName  = source.substring(0, source.indexOf(":"))
+  var propertyValue = this.value(source.substring(source.indexOf(":") + 1))
 
   if (propertyName === "*")
-    this.pattern.properties.push(
-      new WildcardProperty(propertyValue) )
+    return new WildcardProperty(propertyValue)
 
   else if (propertyName.substring(0, 1) === "!")
-    this.pattern.properties.push(
-      new Negator(
-        propertyName.substring(1) === "*" ?
-          new WildcardProperty(propertyValue) :
-          new ExactProperty(
-            propertyName.substring(1),
-            propertyValue ) ) )
+    return new Negator( propertyName.substring(1) === "*" ?
+      new WildcardProperty(propertyValue) :
+      new ExactProperty(
+        propertyName.substring(1),
+        propertyValue ) )
 
   else
-    this.pattern.properties.push(
-      new ExactProperty(propertyName, propertyValue) )
+    return new ExactProperty(propertyName, propertyValue)
 }
 
 
@@ -78,6 +72,10 @@ Interpreter.prototype.value = function (source) {
   if (source.substring(0, 1) === "<" &&
       source.substring(source.length - 1, source.length) === ">")
     return new TypedValue(source.substring(1, source.length - 1))
+
+  if (source.substring(0, 1) === "(" &&
+      source.substring(source.length - 1, source.length) === ")")
+    return this.object(source.substring(1, source.length - 1))
 
   if (source.substring(0, 1) === "/")
     return this.array(source)
@@ -221,6 +219,47 @@ example("Interpreter: 'type:<string>' > OP[EP[TV[string]]]", function () {
     .properties[0]
     .value
     .type === "string"
+})
+
+
+
+example("Interpreter: 'prop:(object:inside)' > OP[EP[OP]]", function () {
+  return  new Interpreter("prop:(object:inside)")
+    .pattern
+    .properties[0]
+    .value instanceof ObjectPattern
+})
+
+
+
+example("Interpreter: 'prop:(object:inside)' > OP[EP[OP[EP]]]", function () {
+  return  new Interpreter("prop:(object:inside)")
+    .pattern
+    .properties[0]
+    .value
+    .properties[0] instanceof ExactProperty
+})
+
+
+
+example("Interpreter: 'prop:(object:inside)' > OP[EP[OP[EP[object]]]]", function () {
+  return  new Interpreter("prop:(object:inside)")
+    .pattern
+    .properties[0]
+    .value
+    .properties[0]
+    .name === "object"
+})
+
+
+
+example("Interpreter: 'prop:(object:inside)' > OP[EP[OP[EP[,inside]]]]", function () {
+  return  new Interpreter("prop:(object:inside)")
+    .pattern
+    .properties[0]
+    .value
+    .properties[0]
+    .value === "inside"
 })
 
 
