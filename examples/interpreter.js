@@ -6,6 +6,7 @@ var Negator = require("../object-pattern").Negator
 var ObjectPattern = require("../object-pattern").ObjectPattern
 var WildcardValue = require("../object-pattern").WildcardValue
 var TypedValue = require("../object-pattern").TypedValue
+var ArrayPattern = require("../object-pattern").ArrayPattern
 
 var Interpreter = function (source) {
   this.pattern = new ObjectPattern
@@ -78,7 +79,22 @@ Interpreter.prototype.value = function (source) {
       source.substring(source.length - 1, source.length) === ">")
     return new TypedValue(source.substring(1, source.length - 1))
 
+  if (source.substring(0, 1) === "/")
+    return this.array(source)
+
   return source
+}
+
+
+Interpreter.prototype.array = function (source) {
+  var pattern = new ArrayPattern
+
+  source.split("/").forEach(function (chunk) {
+    if (chunk !== "")
+      pattern.matchables.push(chunk)
+  })
+
+  return pattern
 }
 
 
@@ -205,4 +221,33 @@ example("Interpreter: 'type:<string>' > OP[EP[TV[string]]]", function () {
     .properties[0]
     .value
     .type === "string"
+})
+
+
+
+example("Interpreter: 'type:/some/array' > OP[EP[AP]]", function () {
+  return  new Interpreter("type:/some/array")
+    .pattern
+    .properties[0]
+    .value instanceof ArrayPattern
+})
+
+
+
+example("Interpreter: 'type:/some/array' > OP[EP[AP[some]]]", function () {
+  return  new Interpreter("type:/some/array")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] === "some"
+})
+
+
+
+example("Interpreter: 'type:/some/array' > OP[EP[AP[/array]]]", function () {
+  return  new Interpreter("type:/some/array")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[1] === "array"
 })
