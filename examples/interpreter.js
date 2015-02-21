@@ -4,6 +4,7 @@ var ExactProperty = require("../object-pattern").ExactProperty
 var WildcardProperty = require("../object-pattern").WildcardProperty
 var Negator = require("../object-pattern").Negator
 var ObjectPattern = require("../object-pattern").ObjectPattern
+var WildcardValue = require("../object-pattern").WildcardValue
 
 var Interpreter = function (source) {
   this.pattern = new ObjectPattern
@@ -47,6 +48,8 @@ Interpreter.prototype.property = function (source) {
       propertyValue = buffer
   }.bind(this))
 
+  propertyValue = this.value(propertyValue)
+
   if (propertyName === "*")
     this.pattern.properties.push(
       new WildcardProperty(propertyValue) )
@@ -61,6 +64,14 @@ Interpreter.prototype.property = function (source) {
   else
     this.pattern.properties.push(
       new ExactProperty(propertyName, propertyValue) )
+}
+
+
+Interpreter.prototype.value = function (source) {
+  if (source === "*")
+    return new WildcardValue
+
+  return source
 }
 
 
@@ -111,4 +122,13 @@ example("Interpreter: '!*:value' > OP[N[WP]]", function () {
     .pattern
     .properties[0]
     .matchable instanceof WildcardProperty
+})
+
+
+
+example("Interpreter: 'something:*' > OP[EP[WV]]", function () {
+  return  new Interpreter("something:*")
+    .pattern
+    .properties[0]
+    .value instanceof WildcardValue
 })
