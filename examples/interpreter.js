@@ -1,12 +1,13 @@
 var example = require("washington")
 
+var ArrayPattern = require("../object-pattern").ArrayPattern
+var ArrayWildcard = require("../object-pattern").ArrayWildcard
 var ExactProperty = require("../object-pattern").ExactProperty
-var WildcardProperty = require("../object-pattern").WildcardProperty
 var Negator = require("../object-pattern").Negator
 var ObjectPattern = require("../object-pattern").ObjectPattern
-var WildcardValue = require("../object-pattern").WildcardValue
 var TypedValue = require("../object-pattern").TypedValue
-var ArrayPattern = require("../object-pattern").ArrayPattern
+var WildcardProperty = require("../object-pattern").WildcardProperty
+var WildcardValue = require("../object-pattern").WildcardValue
 
 var Interpreter = function (source) {
   this.pattern = this.object(source)
@@ -88,7 +89,10 @@ Interpreter.prototype.array = function (source) {
   var pattern = new ArrayPattern
 
   source.split("/").forEach(function (chunk) {
-    if (chunk !== "")
+    if (chunk === "*")
+      pattern.matchables.push(new ArrayWildcard)
+
+    else if (chunk !== "")
       pattern.matchables.push(chunk)
   })
 
@@ -289,4 +293,14 @@ example("Interpreter: 'type:/some/array' > OP[EP[AP[/array]]]", function () {
     .properties[0]
     .value
     .matchables[1] === "array"
+})
+
+
+
+example("Interpreter: 'type:/*/array' > OP[EP[AP[AW]]]", function () {
+  return  new Interpreter("type:/*/array")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayWildcard
 })
