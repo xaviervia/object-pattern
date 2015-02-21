@@ -1,5 +1,6 @@
 var example = require("washington")
 
+var ArrayEllipsis = require("../object-pattern").ArrayEllipsis
 var ArrayPattern = require("../object-pattern").ArrayPattern
 var ArrayWildcard = require("../object-pattern").ArrayWildcard
 var ExactProperty = require("../object-pattern").ExactProperty
@@ -87,10 +88,20 @@ Interpreter.prototype.value = function (source) {
 
 Interpreter.prototype.array = function (source) {
   var pattern = new ArrayPattern
+  var termination = false
 
-  source.split("/").forEach(function (chunk) {
-    if (chunk === "*")
+  source.split("/").forEach(function (chunk, index, list) {
+    if (termination)
+      termination = false
+      
+    else if (chunk === "*")
       pattern.matchables.push(new ArrayWildcard)
+
+    else if (chunk === "**") {
+      pattern.matchables.push(new ArrayEllipsis(
+        index + 1 < list.length ? list[index + 1] : undefined ))
+      termination = false
+    }
 
     else if (chunk !== "")
       pattern.matchables.push(chunk)
@@ -303,4 +314,25 @@ example("Interpreter: 'type:/*/array' > OP[EP[AP[AW]]]", function () {
     .properties[0]
     .value
     .matchables[0] instanceof ArrayWildcard
+})
+
+
+
+example("Interpreter: 'type:/**/array' > OP[EP[AP[AE]]]", function () {
+  return  new Interpreter("type:/**/array")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayEllipsis
+})
+
+
+
+example("Interpreter: 'type:/**/array' > OP[EP[AP[AE[array]]]]", function () {
+  return  new Interpreter("type:/**/array")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .termination === "array"
 })
