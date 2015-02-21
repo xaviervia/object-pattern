@@ -60,7 +60,9 @@ Interpreter.prototype.property = function (source) {
       new Negator(
         propertyName.substring(1) === "*" ?
           new WildcardProperty(propertyValue) :
-          new ExactProperty(propertyValue) ) )
+          new ExactProperty(
+            propertyName.substring(1),
+            propertyValue ) ) )
 
   else
     this.pattern.properties.push(
@@ -96,6 +98,24 @@ example("Interpreter: 'key:value' > OP[EP]", function () {
 
 
 
+example("Interpreter: 'key:value' > OP[EP[key]]", function () {
+  return new Interpreter("key:value")
+    .pattern
+    .properties[0]
+    .name === "key"
+})
+
+
+
+example("Interpreter: 'key:value' > OP[EP[,value]]", function () {
+  return new Interpreter("key:value")
+    .pattern
+    .properties[0]
+    .value === "value"
+})
+
+
+
 example("Interpreter: '*:value' > OP[WP]", function () {
   return new Interpreter("*:value")
     .pattern
@@ -122,11 +142,41 @@ example("Interpreter: '!prop:value' > OP[N[EP]]", function () {
 
 
 
+example("Interpreter: '!prop:value' > OP[N[EP[prop]]]", function () {
+  return  new Interpreter("!prop:value")
+    .pattern
+    .properties[0]
+    .matchable
+    .name === "prop"
+})
+
+
+
+example("Interpreter: '!prop:value' > OP[N[EP[,value]]]", function () {
+  return  new Interpreter("!prop:value")
+    .pattern
+    .properties[0]
+    .matchable
+    .value === "value"
+})
+
+
+
 example("Interpreter: '!*:value' > OP[N[WP]]", function () {
   return  new Interpreter("!*:value")
     .pattern
     .properties[0]
     .matchable instanceof WildcardProperty
+})
+
+
+
+example("Interpreter: '!*:value' > OP[N[WP[value]]]", function () {
+  return  new Interpreter("!*:value")
+    .pattern
+    .properties[0]
+    .matchable
+    .value === "value"
 })
 
 
