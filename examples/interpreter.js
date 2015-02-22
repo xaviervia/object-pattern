@@ -388,3 +388,31 @@ example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,,b]", function () {
     .value
     .matchables[2] === "b"
 })
+
+
+
+example("Interpreter: 'a:/[/sub/array]/array' > OP[EP[AP[AE]]]")
+
+example("Interpreter: 'a:/[/sub/array]/array' > OP[EP[AP[AE[AP]]]]")
+
+example("Interpreter: 'a:/[/sub/array]/array' > OP[EP[AP[AE[AP[sub]]]]]")
+
+example("Interpreter: 'a:/[/sub/array]/array' > OP[EP[AP[AE[AP[,array]]]]]")
+
+example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE]]]")
+
+example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE[OP]]]]")
+
+example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE[OP[EP]]]]]")
+
+example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE[OP[EP[sub]]]]]]")
+
+example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE[OP[EP[,object]]]]]]")
+
+example("Interpreter: 'a:true' > OP[EP[,true]]")
+
+example("Interpreter: 'a:24' > OP[EP[,24]]")
+
+example("Interpreter: 'a:\"true\"' > OP[EP[,\"true\"]]")
+
+example("Interpreter: 'a:\"/true/(a:b)\"' > OP[EP[,\"/true/(a:b)\"]]")
