@@ -93,14 +93,14 @@ Interpreter.prototype.array = function (source) {
   source.split("/").forEach(function (chunk, index, list) {
     if (termination)
       termination = false
-      
+
     else if (chunk === "*")
       pattern.matchables.push(new ArrayWildcard)
 
     else if (chunk === "**") {
       pattern.matchables.push(new ArrayEllipsis(
         index + 1 < list.length ? list[index + 1] : undefined ))
-      termination = false
+      termination = true
     }
 
     else if (chunk !== "")
@@ -335,4 +335,56 @@ example("Interpreter: 'type:/**/array' > OP[EP[AP[AE[array]]]]", function () {
     .value
     .matchables[0]
     .termination === "array"
+})
+
+
+
+example("Interpreter: 'type:/**' > OP[EP[AP[AE[undefined]]]]", function () {
+  return  new Interpreter("type:/**")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .termination === undefined
+})
+
+
+
+example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[AW]]", function () {
+  return  new Interpreter("type:/*/**/a/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayWildcard
+})
+
+
+
+example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,AE]]", function () {
+  return  new Interpreter("type:/*/**/a/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[1] instanceof ArrayEllipsis
+})
+
+
+
+example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,AE[a]]]", function () {
+  return  new Interpreter("type:/*/**/a/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[1]
+    .termination === "a"
+})
+
+
+
+example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,,b]", function () {
+  return  new Interpreter("type:/*/**/a/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[2] === "b"
 })
