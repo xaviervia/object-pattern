@@ -89,6 +89,9 @@ Interpreter.prototype.value = function (source) {
   if (source === "false")
     return false
 
+  if (!isNaN(source))
+    return parseFloat(source)
+
   return source
 }
 
@@ -171,6 +174,9 @@ Interpreter.prototype.array = function (source) {
 
       else if (chunk === "false")
         pattern.matchables.push(false)
+
+      else if (!isNaN(chunk) && chunk !== "")
+        pattern.matchables.push(parseFloat(chunk))
 
       else if (chunk !== "")
         pattern.matchables.push(chunk)
@@ -593,7 +599,32 @@ example("Interpreter: 'a:false' > OP[EP[,false]]", function () {
     .value === false
 })
 
-example("Interpreter: 'a:24' > OP[EP[,24]]")
+
+
+example("Interpreter: 'a:24' > OP[EP[,24]]", function () {
+  return  new Interpreter("a:24")
+    .pattern
+    .properties[0]
+    .value === 24
+})
+
+
+
+example("Interpreter: 'a:24.7' > OP[EP[,24.7]]", function () {
+  return  new Interpreter("a:24.7")
+    .pattern
+    .properties[0]
+    .value === 24.7
+})
+
+
+
+example("Interpreter: 'a:-24.7' > OP[EP[,-24.7]]", function () {
+  return  new Interpreter("a:-24.7")
+    .pattern
+    .properties[0]
+    .value === -24.7
+})
 
 example("Interpreter: 'a:\"true\"' > OP[EP[,\"true\"]]")
 
@@ -619,7 +650,35 @@ example("Interpreter: 'a:/false' > OP[AP[false]]", function () {
     .matchables[0] === false
 })
 
-example("Interpreter: 'a:/23' > OP[AP[23]]")
+
+
+example("Interpreter: 'a:/23' > OP[AP[23]]", function () {
+  return  new Interpreter("a:/23")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] === 23
+})
+
+
+
+example("Interpreter: 'a:/23.2' > OP[AP[23.2]]", function () {
+  return  new Interpreter("a:/23.2")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] === 23.2
+})
+
+
+
+example("Interpreter: 'a:/-23.2' > OP[AP[-23.2]]", function () {
+  return  new Interpreter("a:/-23.2")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] === -23.2
+})
 
 example("Interpreter: 'a:/\"23\"' > OP[AP[\"23\"]]")
 
