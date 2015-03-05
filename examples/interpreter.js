@@ -1,5 +1,6 @@
 var example = require("washington")
 
+var ArrayElement = require("../object-pattern").ArrayElement
 var ArrayEllipsis = require("../object-pattern").ArrayEllipsis
 var ArrayPattern = require("../object-pattern").ArrayPattern
 var ArrayWildcard = require("../object-pattern").ArrayWildcard
@@ -89,23 +90,74 @@ Interpreter.prototype.value = function (source) {
 Interpreter.prototype.array = function (source) {
   var pattern = new ArrayPattern
   var termination = false
+  var deepness = []
+  var buffer = ""
+  var list = []
 
-  source.split("/").forEach(function (chunk, index, list) {
+  source.split("").forEach(function (character, index) {
+    if (character === "/" && deepness.length === 0) {
+      list.push(buffer)
+      buffer = ""
+    }
+
+    else
+      buffer += character
+
+    if (character === "(")
+      deepness.push({character: "("})
+
+    if (character === "[")
+      deepness.push({character: "["})
+
+    if (character === ")") {
+      if (deepness[deepness.length - 1].character === "(")
+        deepness.pop()
+
+      if (deepness.length === 0) {
+        list.push(buffer)
+        buffer = ""
+      }
+    }
+
+    if (character === "]") {
+      if (deepness.length > 0 &&
+          deepness[deepness.length - 1].character === "[")
+        deepness.pop()
+
+      if (deepness.length === 0) {
+        list.push(buffer)
+        buffer = ""
+      }
+    }
+
+    if (index + 1 === source.length)
+      list.push(buffer)
+  })
+
+  list.forEach(function (chunk, index, list) {
     if (termination)
       termination = false
 
-    else if (chunk === "*")
-      pattern.matchables.push(new ArrayWildcard)
+    else {
+      if (chunk === "*")
+        pattern.matchables.push(new ArrayWildcard)
 
-    else if (chunk === "**") {
-      pattern.matchables.push(new ArrayEllipsis(
-        index + 1 < list.length ? list[index + 1] : undefined ))
-      termination = true
+      else if (chunk === "**") {
+        pattern.matchables.push(new ArrayEllipsis(
+          index + 1 < list.length ? list[index + 1] : undefined ))
+        termination = true
+      }
+
+      else if (chunk.substring(0, 1) === "[" &&
+          chunk.substring(chunk.length - 1, chunk.length) === "]")
+        pattern.matchables.push(
+          new ArrayElement(
+            this.array(chunk.substring(1, chunk.length - 1)) ) )
+
+      else if (chunk !== "")
+        pattern.matchables.push(chunk)
     }
-
-    else if (chunk !== "")
-      pattern.matchables.push(chunk)
-  })
+  }.bind(this))
 
   return pattern
 }
@@ -391,23 +443,70 @@ example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,,b]", function () {
 
 
 
-example("Interpreter: 'a:/[/sub/array]/array' > OP[EP[AP[AE]]]")
+example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AE]]]", function () {
+  return  new Interpreter("a:/[/sub/array]/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayElement
+})
 
-example("Interpreter: 'a:/[/sub/array]/array' > OP[EP[AP[AE[AP]]]]")
 
-example("Interpreter: 'a:/[/sub/array]/array' > OP[EP[AP[AE[AP[sub]]]]]")
 
-example("Interpreter: 'a:/[/sub/array]/array' > OP[EP[AP[AE[AP[,array]]]]]")
+example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AE[AP]]]]", function () {
+  return  new Interpreter("a:/[/sub/array]/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchable instanceof ArrayPattern
+})
 
-example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE]]]")
 
-example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE[OP]]]]")
 
-example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE[OP[EP]]]]]")
+example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AE[AP[sub]]]]]", function () {
+  return  new Interpreter("a:/[/sub/array]/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchable
+    .matchables[0] === "sub"
+})
 
-example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE[OP[EP[sub]]]]]]")
 
-example("Interpreter: 'a:/(sub:object)/array' > OP[EP[AP[AE[OP[EP[,object]]]]]]")
+
+example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AE[AP[,array]]]]]", function () {
+  return  new Interpreter("a:/[/sub/array]/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchable
+    .matchables[1] === "array"
+})
+
+
+
+example("Interpreter: 'a:/[/sub/[/sub]/array]/b' > OP[EP[AP[AE[AP[,AE]]]]]", function () {
+  return  new Interpreter("a:/[/sub/[/sub]/array]/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchable
+    .matchables[1] instanceof ArrayElement
+})
+
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE]]]")
+
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP]]]]")
+
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP]]]]]")
+
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP[sub]]]]]]")
+
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP[,object]]]]]]")
 
 example("Interpreter: 'a:true' > OP[EP[,true]]")
 
