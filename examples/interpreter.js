@@ -154,6 +154,12 @@ Interpreter.prototype.array = function (source) {
           new ArrayElement(
             this.array(chunk.substring(1, chunk.length - 1)) ) )
 
+      else if (chunk.substring(0, 1) === "(" &&
+          chunk.substring(chunk.length - 1, chunk.length) === ")")
+        pattern.matchables.push(
+          new ArrayElement(
+            this.object(chunk.substring(1, chunk.length - 1)) ) )
+
       else if (chunk !== "")
         pattern.matchables.push(chunk)
     }
@@ -498,15 +504,64 @@ example("Interpreter: 'a:/[/sub/[/sub]/array]/b' > OP[EP[AP[AE[AP[,AE]]]]]", fun
     .matchables[1] instanceof ArrayElement
 })
 
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE]]]")
 
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP]]]]")
 
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP]]]]]")
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE]]]", function () {
+  return  new Interpreter("a:/(sub:object)/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayElement
+})
 
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP[sub]]]]]]")
 
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP[,object]]]]]]")
+
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP]]]]", function () {
+  return  new Interpreter("a:/(sub:object)/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchable instanceof ObjectPattern
+})
+
+
+
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP]]]]]", function () {
+  return  new Interpreter("a:/(sub:object)/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchable
+    .properties[0] instanceof ExactProperty
+})
+
+
+
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP[sub]]]]]]", function () {
+  return  new Interpreter("a:/(sub:object)/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchable
+    .properties[0]
+    .name === "sub"
+})
+
+
+
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP[,object]]]]]]", function () {
+  return  new Interpreter("a:/(sub:object)/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchable
+    .properties[0]
+    .value === "object"
+})
 
 example("Interpreter: 'a:true' > OP[EP[,true]]")
 
