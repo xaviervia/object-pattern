@@ -83,6 +83,12 @@ Interpreter.prototype.value = function (source) {
   if (source.substring(0, 1) === "/")
     return this.array(source)
 
+  if (source === "true")
+    return true
+
+  if (source === "false")
+    return false
+
   return source
 }
 
@@ -159,6 +165,12 @@ Interpreter.prototype.array = function (source) {
         pattern.matchables.push(
           new ArrayElement(
             this.object(chunk.substring(1, chunk.length - 1)) ) )
+
+      else if (chunk === "true")
+        pattern.matchables.push(true)
+
+      else if (chunk === "false")
+        pattern.matchables.push(false)
 
       else if (chunk !== "")
         pattern.matchables.push(chunk)
@@ -563,10 +575,52 @@ example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP[,object]]]]]]", fu
     .value === "object"
 })
 
-example("Interpreter: 'a:true' > OP[EP[,true]]")
+
+
+example("Interpreter: 'a:true' > OP[EP[,true]]", function () {
+  return  new Interpreter("a:true")
+    .pattern
+    .properties[0]
+    .value === true
+})
+
+
+
+example("Interpreter: 'a:false' > OP[EP[,false]]", function () {
+  return  new Interpreter("a:false")
+    .pattern
+    .properties[0]
+    .value === false
+})
 
 example("Interpreter: 'a:24' > OP[EP[,24]]")
 
 example("Interpreter: 'a:\"true\"' > OP[EP[,\"true\"]]")
 
 example("Interpreter: 'a:\"/true/(a:b)\"' > OP[EP[,\"/true/(a:b)\"]]")
+
+
+
+example("Interpreter: 'a:/true' > OP[AP[true]]", function () {
+  return  new Interpreter("a:/true")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] === true
+})
+
+
+
+example("Interpreter: 'a:/false' > OP[AP[false]]", function () {
+  return  new Interpreter("a:/false")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] === false
+})
+
+example("Interpreter: 'a:/23' > OP[AP[23]]")
+
+example("Interpreter: 'a:/\"23\"' > OP[AP[\"23\"]]")
+
+example("Interpreter: 'a:/\"true\"' > OP[AP[true]]")
