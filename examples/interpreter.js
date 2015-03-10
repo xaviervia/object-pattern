@@ -11,6 +11,25 @@ var TypedValue = require("../object-pattern").TypedValue
 var WildcardProperty = require("../object-pattern").WildcardProperty
 var WildcardValue = require("../object-pattern").WildcardValue
 
+var value = function (chunk) {
+
+  if (chunk.substring(0, 1) === '"' &&
+      chunk.substring(chunk.length - 1, chunk.length) === '"')
+    return chunk.substring(1, chunk.length - 1)
+
+  if (chunk.substring(0, 1) === "'" &&
+      chunk.substring(chunk.length - 1, chunk.length) === "'")
+    return chunk.substring(1, chunk.length - 1)
+
+  if (chunk === "true") return true
+
+  if (chunk === "false") return false
+
+  if (!isNaN(chunk)) return parseFloat(chunk)
+
+  return chunk
+}
+
 var Interpreter = function (source) {
   this.pattern = this.object(source)
 }
@@ -117,24 +136,7 @@ Interpreter.prototype.value = function (source) {
   if (source.substring(0, 1) === "/")
     return this.array(source)
 
-  if (source === "true")
-    return true
-
-  if (source === "false")
-    return false
-
-  if (!isNaN(source))
-    return parseFloat(source)
-
-  if (source.substring(0, 1) === '"' &&
-      source.substring(source.length - 1, source.length) === '"')
-    return source.substring(1, source.length - 1)
-
-  if (source.substring(0, 1) === "'" &&
-      source.substring(source.length - 1, source.length) === "'")
-    return source.substring(1, source.length - 1)
-
-  return source
+  return value(source)
 }
 
 
@@ -239,24 +241,7 @@ Interpreter.prototype.array = function (source) {
         return new ArrayElement(
           this.object(chunk.substring(1, chunk.length - 1)) )
 
-      else if (chunk.substring(0, 1) === '"' &&
-          chunk.substring(chunk.length - 1, chunk.length) === '"')
-        return chunk.substring(1, chunk.length - 1)
-
-      else if (chunk.substring(0, 1) === "'" &&
-          chunk.substring(chunk.length - 1, chunk.length) === "'")
-        return chunk.substring(1, chunk.length - 1)
-
-      else if (chunk === "true")
-        return true
-
-      else if (chunk === "false")
-        return false
-
-      else if (!isNaN(chunk) && chunk !== "")
-        return parseFloat(chunk)
-
-      return chunk
+      return value(chunk)
     }.bind(this))
 
   return pattern
