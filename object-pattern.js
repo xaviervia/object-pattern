@@ -345,42 +345,6 @@ var ArrayMatchable = function () {}
 
 
 
-// ArrayElement
-// ------------
-//
-// Encapsulated any Matchable. Forwards the content of the first element
-// of the argument `Array` to the `Matchable`'s `match` and returns:
-//
-// - `"matched"`: the result of `match`
-// - `"unmatched"`: the rest of the `Array`
-//
-// Usage:
-//
-// ```javascript
-// var arrayElement = new ArrayElement(new TypedValue('string'));
-//
-// var result = arrayElement.match(['text', 'extra']);
-// result.matched; // => true
-// result.unmatched; // => ['extra']
-// ```
-//
-var ArrayElement = function (matchable) {
-  this.matchable = matchable
-}
-
-
-ArrayElement.prototype = new ArrayMatchable
-
-
-ArrayElement.prototype.match = function (array) {
-  return {
-    matched: this.matchable.match(array[0]),
-    unmatched: array.slice(1)
-  }
-}
-
-
-
 // ArrayEllipsis
 // -------------
 //
@@ -463,6 +427,5 @@ module.exports = {
   TypedValue: TypedValue,
   ArrayPattern: ArrayPattern,
   ArrayMatchable: ArrayMatchable,
-  ArrayElement: ArrayElement,
   ArrayEllipsis: ArrayEllipsis
 }

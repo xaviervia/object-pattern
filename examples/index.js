@@ -1,4 +1,3 @@
-require("./array-element")
 require("./array-ellipsis")
 require("./array-pattern")
 require("./exact-property")
