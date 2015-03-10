@@ -1,8 +1,11 @@
 var example = require("washington")
 
+var ArrayEllipsis = require("../object-pattern").ArrayEllipsis
 var ArrayPattern = require("../object-pattern").ArrayPattern
 var ArrayMatchable = require("../object-pattern").ArrayMatchable
 var Matchable = require("../object-pattern").Matchable
+var TypedValue = require("../object-pattern").TypedValue
+var WildcardValue = require("../object-pattern").WildcardValue
 
 
 
@@ -125,4 +128,53 @@ example("ArrayPattern[non-AM, non-AM]: true when match", function () {
 
 example("ArrayPattern[non-AM, non-AM]: false when not a match", function () {
   return ! new ArrayPattern(5, 6).match([5, 7])
+})
+
+
+
+example("ArrayPattern[M, AM]: true when a match, sends the rest to the next AM", function () {
+  var arrayMatchable = new ArrayMatchable
+  var matchable = new Matchable
+  var arrayMatcher = new ArrayPattern(matchable, arrayMatchable)
+  matchable.match = function (value) {
+    return value === 'exactly'
+  }
+  arrayMatchable.match = function (argument) {
+    this.match.argument = argument
+    return {
+      matched: true,
+      unmatched: []
+    }
+  }
+
+  arrayMatcher.match(['exactly', 'extra'])
+
+  return  arrayMatchable.match.argument[0] == 'extra' &&
+          arrayMatchable.match.argument.length == 1
+})
+
+
+
+example("ArrayPattern <number>/user/*/9 doesn't match [6, 'user', 9]", function () {
+  var arrayMatcher = new ArrayPattern(
+    new TypedValue( 'number' ),
+    'user',
+    new WildcardValue(),
+    new ArrayEllipsis( 9 )
+  )
+
+  return ! arrayMatcher.match([6, 'user', 9])
+})
+
+
+
+example("ArrayPattern <number>/user/*/9 matches [-56.2, 'user', 'extra', 9]", function () {
+  var arrayMatcher = new ArrayPattern(
+    new TypedValue( 'number' ),
+    'user',
+    new WildcardValue(),
+    new ArrayEllipsis( 9 )
+  )
+
+  return arrayMatcher.match([-56.2, 'user', 'extra', 9])
 })

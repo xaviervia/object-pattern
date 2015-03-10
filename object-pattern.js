@@ -267,9 +267,9 @@ TypedValue.prototype.match = function (object) {
 //
 // ```javascript
 // var arrayMatcher = new ArrayPattern(
-//   new ArrayElement( new TypedValue( 'number' ) ),
+//   new TypedValue( 'number' ),
 //   'user',
-//   new ArrayElement( new WildcardValue() ),
+//   new WildcardValue(),
 //   new ArrayEllipsis( 9 )
 // );
 //
@@ -314,7 +314,12 @@ ArrayPattern.prototype.match = function (array) {
       if (filteredArray.length === 0)
         return false
 
-      if (filteredArray[0] !== this.matchables[i])
+      if (this.matchables[i] instanceof Matchable) {
+        if (! this.matchables[i].match(filteredArray[0]) )
+          return false
+      }
+
+      else if (filteredArray[0] !== this.matchables[i])
         return false
 
       result.matched = true
