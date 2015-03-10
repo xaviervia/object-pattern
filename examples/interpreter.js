@@ -18,11 +18,11 @@ var Interpreter = function (source) {
 
 Interpreter.prototype.object = function (source) {
   var buffer = ""
-  var deepness = 0
+  var deepness = []
   var object = new ObjectPattern
 
   source.split("").forEach(function (character, index) {
-    if (character === "," && deepness === 0) {
+    if (character === "," && deepness.length === 0) {
       object.properties.push(this.property(buffer))
       buffer = ""
     }
@@ -30,13 +30,32 @@ Interpreter.prototype.object = function (source) {
     else
       buffer += character
 
-    if (character === "(") deepness ++
+    if (character === "(")
+      deepness.push({character: "("})
+
     if (character === ")") {
-      deepness --
-      if (deepness === 0) {
+      if (deepness[deepness.length - 1].character === "(")
+        deepness.pop()
+
+      if (deepness.length === 0) {
         object.properties.push(this.property(buffer))
         buffer = ""
       }
+    }
+
+    if (character === '"') {
+      if (deepness.length > 0 &&
+          deepness[deepness.length - 1].character === '"') {
+        deepness.pop()
+
+        if (deepness.length === 0) {
+          object.properties.push(this.property(buffer))
+          buffer = ""
+        }
+      }
+
+      else
+        deepness.push({character: '"'})
     }
 
     if (index + 1 === source.length)
@@ -92,6 +111,10 @@ Interpreter.prototype.value = function (source) {
   if (!isNaN(source))
     return parseFloat(source)
 
+  if (source.substring(0, 1) === '"' &&
+      source.substring(source.length - 1, source.length) === '"')
+    return source.substring(1, source.length - 1)
+
   return source
 }
 
@@ -139,6 +162,21 @@ Interpreter.prototype.array = function (source) {
       }
     }
 
+    if (character === '"') {
+      if (deepness.length > 0 &&
+          deepness[deepness.length - 1].character === '"') {
+        deepness.pop()
+
+        if (deepness.length === 0) {
+          list.push(buffer)
+          buffer = ""
+        }
+      }
+
+      else
+        deepness.push({character: '"'})
+    }
+
     if (index + 1 === source.length)
       list.push(buffer)
   })
@@ -168,6 +206,10 @@ Interpreter.prototype.array = function (source) {
         pattern.matchables.push(
           new ArrayElement(
             this.object(chunk.substring(1, chunk.length - 1)) ) )
+
+      else if (chunk.substring(0, 1) === '"' &&
+          chunk.substring(chunk.length - 1, chunk.length) === '"')
+        pattern.matchables.push(chunk.substring(1, chunk.length - 1))
 
       else if (chunk === "true")
         pattern.matchables.push(true)
@@ -626,9 +668,23 @@ example("Interpreter: 'a:-24.7' > OP[EP[,-24.7]]", function () {
     .value === -24.7
 })
 
-example("Interpreter: 'a:\"true\"' > OP[EP[,\"true\"]]")
 
-example("Interpreter: 'a:\"/true/(a:b)\"' > OP[EP[,\"/true/(a:b)\"]]")
+
+example("Interpreter: 'a:\"true\"' > OP[EP[,\"true\"]]", function () {
+  return  new Interpreter("a:\"true\"")
+    .pattern
+    .properties[0]
+    .value === "true"
+})
+
+
+
+example("Interpreter: 'a:\"/true/(a:b)\"' > OP[EP[,\"/true/(a:b)\"]]", function () {
+  return  new Interpreter("a:\"/true/(a:b)\"")
+    .pattern
+    .properties[0]
+    .value === "/true/(a:b)"
+})
 
 
 
@@ -680,6 +736,30 @@ example("Interpreter: 'a:/-23.2' > OP[AP[-23.2]]", function () {
     .matchables[0] === -23.2
 })
 
-example("Interpreter: 'a:/\"23\"' > OP[AP[\"23\"]]")
+example("Interpreter: 'a:/\"23\"' > OP[AP[\"23\"]]", function () {
+  return  new Interpreter("a:/\"23\"")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] === "23"
+})
 
-example("Interpreter: 'a:/\"true\"' > OP[AP[true]]")
+example("Interpreter: 'a:/\"true\"' > OP[AP[true]]", function () {
+  return  new Interpreter("a:/\"true\"")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] === "true"
+})
+
+example("Interpreter: 'a:/\"so/th/(go:1)\"' > OP[AP[\"so/th/(go:1)\"]]", function () {
+  return  new Interpreter("a:/\"so/th/(go:1)\"")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] === "so/th/(go:1)"
+})
+
+example("Interpreter: 'a:'(sogo:/1/2)'' > OP[EP['(sogo:/1/2)']]")
+
+example("Interpreter: 'a:/'so/th/(go:1)'' > OP[AP['so/th/(go:1)']]")
