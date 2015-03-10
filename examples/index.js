@@ -1,7 +1,6 @@
 require("./array-element")
 require("./array-ellipsis")
 require("./array-pattern")
-require("./array-wildcard")
 require("./exact-property")
 require("./negator")
 require("./object-pattern")

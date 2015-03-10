@@ -269,7 +269,7 @@ TypedValue.prototype.match = function (object) {
 // var arrayMatcher = new ArrayPattern(
 //   new ArrayElement( new TypedValue( 'number' ) ),
 //   'user',
-//   new ArrayWildcard(),
+//   new ArrayElement( new WildcardValue() ),
 //   new ArrayEllipsis( 9 )
 // );
 //
@@ -376,37 +376,6 @@ ArrayElement.prototype.match = function (array) {
 
 
 
-// ArrayWildcard
-// -------------
-//
-// Returns `true` unless there is nothing in the `Array`. Removes the first
-// element from the `Array`.
-//
-// Usage:
-//
-// ```javascript
-// var arrayWildcard = new ArrayWildcard();
-//
-// var result = arrayWildcard.match(['anything', 'extra']);
-// result.matched; // => true
-// result.unmatched; // => ['extra']
-// ```
-//
-var ArrayWildcard = function () {}
-
-
-ArrayWildcard.prototype = new ArrayMatchable
-
-
-ArrayWildcard.prototype.match = function (array) {
-  return {
-    matched: array.length > 0,
-    unmatched: array.slice(1)
-  }
-}
-
-
-
 // ArrayEllipsis
 // -------------
 //
@@ -490,6 +459,5 @@ module.exports = {
   ArrayPattern: ArrayPattern,
   ArrayMatchable: ArrayMatchable,
   ArrayElement: ArrayElement,
-  ArrayWildcard: ArrayWildcard,
   ArrayEllipsis: ArrayEllipsis
 }
