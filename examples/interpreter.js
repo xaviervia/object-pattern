@@ -1,6 +1,5 @@
 var example = require("washington")
 
-var ArrayElement = require("../object-pattern").ArrayElement
 var ArrayEllipsis = require("../object-pattern").ArrayEllipsis
 var ArrayPattern = require("../object-pattern").ArrayPattern
 var ArrayWildcard = require("../object-pattern").ArrayWildcard
@@ -223,7 +222,7 @@ Interpreter.prototype.array = function (source) {
     })
     .map(function (chunk, index, list) {
       if (chunk === "*")
-        return new ArrayElement(new WildcardValue)
+        return new WildcardValue
 
       else if (chunk.substring(0, 3) === "**/")
         return new ArrayEllipsis(chunk.substring(3))
@@ -233,13 +232,11 @@ Interpreter.prototype.array = function (source) {
 
       else if (chunk.substring(0, 1) === "[" &&
           chunk.substring(chunk.length - 1, chunk.length) === "]")
-        return new ArrayElement(
-          this.array(chunk.substring(1, chunk.length - 1)) )
+        return this.array(chunk.substring(1, chunk.length - 1))
 
       else if (chunk.substring(0, 1) === "(" &&
           chunk.substring(chunk.length - 1, chunk.length) === ")")
-        return new ArrayElement(
-          this.object(chunk.substring(1, chunk.length - 1)) )
+        return this.object(chunk.substring(1, chunk.length - 1))
 
       return value(chunk)
     }.bind(this))
@@ -445,13 +442,12 @@ example("Interpreter: 'type:/some/array' > OP[EP[AP[/array]]]", function () {
 
 
 
-example("Interpreter: 'type:/*/array' > OP[EP[AP[AE[WV]]]]", function () {
+example("Interpreter: 'type:/*/array' > OP[EP[AP[WV]]]", function () {
   return  new Interpreter("type:/*/array")
     .pattern
     .properties[0]
     .value
-    .matchables[0]
-    .matchable instanceof WildcardValue
+    .matchables[0] instanceof WildcardValue
 })
 
 
@@ -498,28 +494,27 @@ example("Interpreter: 'type:/**' > OP[EP[AP[AE[undefined]]]]", function () {
 
 
 
-example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[AE]]", function () {
+example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[WV]]]", function () {
   return  new Interpreter("type:/*/**/a/b")
     .pattern
     .properties[0]
     .value
-    .matchables[0] instanceof ArrayElement
+    .matchables[0] instanceof WildcardValue
 })
 
 
 
-example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[AE[WV]]]", function () {
+example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[WV]]]", function () {
   return  new Interpreter("type:/*/**/a/b")
     .pattern
     .properties[0]
     .value
-    .matchables[0]
-    .matchable instanceof WildcardValue
+    .matchables[0] instanceof WildcardValue
 })
 
 
 
-example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,AE]]", function () {
+example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,AE]]]", function () {
   return  new Interpreter("type:/*/**/a/b")
     .pattern
     .properties[0]
@@ -550,116 +545,98 @@ example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,,b]", function () {
 
 
 
-example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AE]]]", function () {
+example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP]]]", function () {
   return  new Interpreter("a:/[/sub/array]/b")
     .pattern
     .properties[0]
     .value
-    .matchables[0] instanceof ArrayElement
+    .matchables[0] instanceof ArrayPattern
 })
 
 
 
-example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AE[AP]]]]", function () {
+example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP]]]", function () {
+  return  new Interpreter("a:/[/sub/array]/b")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayPattern
+})
+
+
+
+example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP[sub]]]]", function () {
   return  new Interpreter("a:/[/sub/array]/b")
     .pattern
     .properties[0]
     .value
     .matchables[0]
-    .matchable instanceof ArrayPattern
-})
-
-
-
-example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AE[AP[sub]]]]]", function () {
-  return  new Interpreter("a:/[/sub/array]/b")
-    .pattern
-    .properties[0]
-    .value
-    .matchables[0]
-    .matchable
     .matchables[0] === "sub"
 })
 
 
 
-example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AE[AP[,array]]]]]", function () {
+example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP[,array]]]]", function () {
   return  new Interpreter("a:/[/sub/array]/b")
     .pattern
     .properties[0]
     .value
     .matchables[0]
-    .matchable
     .matchables[1] === "array"
 })
 
 
 
-example("Interpreter: 'a:/[/sub/[/sub]/array]/b' > OP[EP[AP[AE[AP[,AE]]]]]", function () {
+example("Interpreter: 'a:/[/sub/[/sub]/array]/b' > OP[EP[AP[AP[,AP]]]]", function () {
   return  new Interpreter("a:/[/sub/[/sub]/array]/b")
     .pattern
     .properties[0]
     .value
     .matchables[0]
-    .matchable
-    .matchables[1] instanceof ArrayElement
+    .matchables[1] instanceof ArrayPattern
 })
 
 
 
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE]]]", function () {
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP]]]", function () {
   return  new Interpreter("a:/(sub:object)/b")
     .pattern
     .properties[0]
     .value
-    .matchables[0] instanceof ArrayElement
+    .matchables[0] instanceof ObjectPattern
 })
 
 
 
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP]]]]", function () {
-  return  new Interpreter("a:/(sub:object)/b")
-    .pattern
-    .properties[0]
-    .value
-    .matchables[0]
-    .matchable instanceof ObjectPattern
-})
-
-
-
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP]]]]]", function () {
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP[EP]]]]", function () {
   return  new Interpreter("a:/(sub:object)/b")
     .pattern
     .properties[0]
     .value
     .matchables[0]
-    .matchable
     .properties[0] instanceof ExactProperty
 })
 
 
 
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP[sub]]]]]]", function () {
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP[EP[sub]]]]]", function () {
   return  new Interpreter("a:/(sub:object)/b")
     .pattern
     .properties[0]
     .value
     .matchables[0]
-    .matchable
     .properties[0]
     .name === "sub"
 })
 
 
 
-example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[AE[OP[EP[,object]]]]]]", function () {
+example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP[EP[,object]]]]]", function () {
   return  new Interpreter("a:/(sub:object)/b")
     .pattern
     .properties[0]
     .value
     .matchables[0]
-    .matchable
     .properties[0]
     .value === "object"
 })
