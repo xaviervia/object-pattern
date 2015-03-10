@@ -733,3 +733,9 @@ example("Interpreter: 'a:/'so/th/(go:1)'' > OP[AP['so/th/(go:1)']]", function ()
 example("Interpreter: 'a:/<number>' > OP[AP[TV['number']]]")
 
 example("Interpreter: 'a:\"some\\\"thing\"' > OP[EP[\"some\\\"thing\"]]")
+
+example("Interpreter: '/a/b' > AP")
+
+example("Interpreter: '/a/b' > AP[a]")
+
+example("Interpreter: '/a/b' > AP[,b]")
