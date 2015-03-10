@@ -146,7 +146,7 @@ Interpreter.prototype.array = function (source) {
   var list = []
 
   source.split("").forEach(function (character, index) {
-    if (character === "/" && deepness.length === 0) {
+    if (character === "/" && deepness.length === 0 && buffer !== "**") {
       list.push(buffer)
       buffer = ""
     }
@@ -215,53 +215,49 @@ Interpreter.prototype.array = function (source) {
       list.push(buffer)
   })
 
-  list.forEach(function (chunk, index, list) {
-    if (termination)
-      termination = false
-
-    else {
+  pattern.matchables = list
+    .filter(function (chunk) {
+      return chunk !== ""
+    })
+    .map(function (chunk, index, list) {
       if (chunk === "*")
-        pattern.matchables.push(new ArrayElement(new WildcardValue))
+        return new ArrayElement(new WildcardValue)
 
-      else if (chunk === "**") {
-        pattern.matchables.push(new ArrayEllipsis(
-          index + 1 < list.length ? list[index + 1] : undefined ))
-        termination = true
-      }
+      else if (chunk.substring(0, 3) === "**/")
+        return new ArrayEllipsis(chunk.substring(3))
+
+      else if (chunk === "**")
+        return new ArrayEllipsis
 
       else if (chunk.substring(0, 1) === "[" &&
           chunk.substring(chunk.length - 1, chunk.length) === "]")
-        pattern.matchables.push(
-          new ArrayElement(
-            this.array(chunk.substring(1, chunk.length - 1)) ) )
+        return new ArrayElement(
+          this.array(chunk.substring(1, chunk.length - 1)) )
 
       else if (chunk.substring(0, 1) === "(" &&
           chunk.substring(chunk.length - 1, chunk.length) === ")")
-        pattern.matchables.push(
-          new ArrayElement(
-            this.object(chunk.substring(1, chunk.length - 1)) ) )
+        return new ArrayElement(
+          this.object(chunk.substring(1, chunk.length - 1)) )
 
       else if (chunk.substring(0, 1) === '"' &&
           chunk.substring(chunk.length - 1, chunk.length) === '"')
-        pattern.matchables.push(chunk.substring(1, chunk.length - 1))
+        return chunk.substring(1, chunk.length - 1)
 
       else if (chunk.substring(0, 1) === "'" &&
           chunk.substring(chunk.length - 1, chunk.length) === "'")
-        pattern.matchables.push(chunk.substring(1, chunk.length - 1))
+        return chunk.substring(1, chunk.length - 1)
 
       else if (chunk === "true")
-        pattern.matchables.push(true)
+        return true
 
       else if (chunk === "false")
-        pattern.matchables.push(false)
+        return false
 
       else if (!isNaN(chunk) && chunk !== "")
-        pattern.matchables.push(parseFloat(chunk))
+        return parseFloat(chunk)
 
-      else if (chunk !== "")
-        pattern.matchables.push(chunk)
-    }
-  }.bind(this))
+      return chunk
+    }.bind(this))
 
   return pattern
 }
@@ -492,6 +488,16 @@ example("Interpreter: 'type:/**/array' > OP[EP[AP[AE[array]]]]", function () {
     .value
     .matchables[0]
     .termination === "array"
+})
+
+
+
+example("Interpreter: 'type:/**' > OP[EP[AP[AE]]]", function () {
+  return  new Interpreter("type:/**")
+    .pattern
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayEllipsis
 })
 
 
