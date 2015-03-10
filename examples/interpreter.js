@@ -10,38 +10,14 @@ var TypedValue = require("../object-pattern").TypedValue
 var WildcardProperty = require("../object-pattern").WildcardProperty
 var WildcardValue = require("../object-pattern").WildcardValue
 
-var value = function (chunk) {
-
-  if (chunk.substring(0, 1) === '"' &&
-      chunk.substring(chunk.length - 1, chunk.length) === '"')
-    return chunk.substring(1, chunk.length - 1)
-
-  if (chunk.substring(0, 1) === "'" &&
-      chunk.substring(chunk.length - 1, chunk.length) === "'")
-    return chunk.substring(1, chunk.length - 1)
-
-  if (chunk === "true") return true
-
-  if (chunk === "false") return false
-
-  if (!isNaN(chunk)) return parseFloat(chunk)
-
-  return chunk
-}
-
-var Interpreter = function (source) {
-  this.pattern = this.object(source)
-}
-
-
-Interpreter.prototype.object = function (source) {
+var object = function (source) {
   var buffer = ""
   var deepness = []
-  var object = new ObjectPattern
+  var pattern = new ObjectPattern
 
   source.split("").forEach(function (character, index) {
     if (character === "," && deepness.length === 0) {
-      object.properties.push(this.property(buffer))
+      pattern.properties.push(property(buffer))
       buffer = ""
     }
 
@@ -56,7 +32,7 @@ Interpreter.prototype.object = function (source) {
         deepness.pop()
 
       if (deepness.length === 0) {
-        object.properties.push(this.property(buffer))
+        pattern.properties.push(property(buffer))
         buffer = ""
       }
     }
@@ -67,7 +43,7 @@ Interpreter.prototype.object = function (source) {
         deepness.pop()
 
         if (deepness.length === 0) {
-          object.properties.push(this.property(buffer))
+          pattern.properties.push(property(buffer))
           buffer = ""
         }
       }
@@ -82,7 +58,7 @@ Interpreter.prototype.object = function (source) {
         deepness.pop()
 
         if (deepness.length === 0) {
-          object.properties.push(this.property(buffer))
+          pattern.properties.push(property(buffer))
           buffer = ""
         }
       }
@@ -92,18 +68,17 @@ Interpreter.prototype.object = function (source) {
     }
 
     if (index + 1 === source.length && buffer !== "")
-      object.properties.push(this.property(buffer))
-  }.bind(this))
+      pattern.properties.push(property(buffer))
+  })
 
-  return object
+  return pattern
 }
 
-
-Interpreter.prototype.property = function (source) {
+var property = function (source) {
   var buffer        = ""
   var deepness      = 0
   var propertyName  = source.substring(0, source.indexOf(":"))
-  var propertyValue = this.value(source.substring(source.indexOf(":") + 1))
+  var propertyValue = value(source.substring(source.indexOf(":") + 1))
 
   if (propertyName === "*")
     return new WildcardProperty(propertyValue)
@@ -119,27 +94,7 @@ Interpreter.prototype.property = function (source) {
     return new ExactProperty(propertyName, propertyValue)
 }
 
-
-Interpreter.prototype.value = function (source) {
-  if (source === "*")
-    return new WildcardValue
-
-  if (source.substring(0, 1) === "<" &&
-      source.substring(source.length - 1, source.length) === ">")
-    return new TypedValue(source.substring(1, source.length - 1))
-
-  if (source.substring(0, 1) === "(" &&
-      source.substring(source.length - 1, source.length) === ")")
-    return this.object(source.substring(1, source.length - 1))
-
-  if (source.substring(0, 1) === "/")
-    return this.array(source)
-
-  return value(source)
-}
-
-
-Interpreter.prototype.array = function (source) {
+var array = function (source) {
   var pattern = new ArrayPattern
   var termination = false
   var deepness = []
@@ -217,53 +172,78 @@ Interpreter.prototype.array = function (source) {
   })
 
   pattern.matchables = list
-    .filter(function (chunk) {
-      return chunk !== ""
+    .filter(function (source) {
+      return source !== ""
     })
-    .map(function (chunk, index, list) {
-      if (chunk === "*")
-        return new WildcardValue
+    .map(function (source, index, list) {
+      if (source.substring(0, 3) === "**/")
+        return new ArrayEllipsis(source.substring(3))
 
-      else if (chunk.substring(0, 3) === "**/")
-        return new ArrayEllipsis(chunk.substring(3))
-
-      else if (chunk === "**")
+      else if (source === "**")
         return new ArrayEllipsis
 
-      else if (chunk.substring(0, 1) === "[" &&
-          chunk.substring(chunk.length - 1, chunk.length) === "]")
-        return this.array(chunk.substring(1, chunk.length - 1))
-
-      else if (chunk.substring(0, 1) === "(" &&
-          chunk.substring(chunk.length - 1, chunk.length) === ")")
-        return this.object(chunk.substring(1, chunk.length - 1))
-
-      return value(chunk)
-    }.bind(this))
+      return value(source)
+    })
 
   return pattern
 }
 
+var value = function (source) {
+  if (source.substring(0, 1) === "/")
+    return array(source)
+
+  if (source === "*")
+    return new WildcardValue
+
+  if (source.substring(0, 1) === "[" &&
+      source.substring(source.length - 1, source.length) === "]")
+    return array(source.substring(1, source.length - 1))
+
+  if (source.substring(0, 1) === "<" &&
+      source.substring(source.length - 1, source.length) === ">")
+    return new TypedValue(source.substring(1, source.length - 1))
+
+  if (source.substring(0, 1) === "(" &&
+      source.substring(source.length - 1, source.length) === ")")
+    return object(source.substring(1, source.length - 1))
+
+  if (source.substring(0, 1) === '"' &&
+      source.substring(source.length - 1, source.length) === '"')
+    return source.substring(1, source.length - 1)
+
+  if (source.substring(0, 1) === "'" &&
+      source.substring(source.length - 1, source.length) === "'")
+    return source.substring(1, source.length - 1)
+
+  if (source === "true") return true
+
+  if (source === "false") return false
+
+  if (!isNaN(source)) return parseFloat(source)
+
+  return source
+}
+
+var Interpreter = function (source) {
+  return object(source)
+}
 
 
 example("Interpreter: '' > OP", function () {
-  return new Interpreter("")
-    .pattern instanceof ObjectPattern
+  return Interpreter("") instanceof ObjectPattern
 })
 
 
 
 example("Interpreter: 'key:value' > OP[EP]", function () {
-  return new Interpreter("key:value")
-    .pattern
+  return Interpreter("key:value")
     .properties[0] instanceof ExactProperty
 })
 
 
 
 example("Interpreter: 'key:value' > OP[EP[key]]", function () {
-  return new Interpreter("key:value")
-    .pattern
+  return Interpreter("key:value")
     .properties[0]
     .name === "key"
 })
@@ -271,8 +251,7 @@ example("Interpreter: 'key:value' > OP[EP[key]]", function () {
 
 
 example("Interpreter: 'key:value' > OP[EP[,value]]", function () {
-  return new Interpreter("key:value")
-    .pattern
+  return Interpreter("key:value")
     .properties[0]
     .value === "value"
 })
@@ -280,15 +259,14 @@ example("Interpreter: 'key:value' > OP[EP[,value]]", function () {
 
 
 example("Interpreter: '*:value' > OP[WP]", function () {
-  return new Interpreter("*:value")
-    .pattern
+  return Interpreter("*:value")
     .properties[0] instanceof WildcardProperty
 })
 
 
 
 example("Interpreter: '*:value,other:23' > OP[WP,EP]", function () {
-  var properties = new Interpreter("*:value,other:23").pattern.properties
+  var properties = Interpreter("*:value,other:23").properties
 
   return  properties[0] instanceof WildcardProperty &&
           properties[1] instanceof ExactProperty
@@ -297,8 +275,7 @@ example("Interpreter: '*:value,other:23' > OP[WP,EP]", function () {
 
 
 example("Interpreter: '!prop:value' > OP[N[EP]]", function () {
-  return  new Interpreter("!prop:value")
-    .pattern
+  return  Interpreter("!prop:value")
     .properties[0]
     .matchable instanceof ExactProperty
 })
@@ -306,8 +283,7 @@ example("Interpreter: '!prop:value' > OP[N[EP]]", function () {
 
 
 example("Interpreter: '!prop:value' > OP[N[EP[prop]]]", function () {
-  return  new Interpreter("!prop:value")
-    .pattern
+  return  Interpreter("!prop:value")
     .properties[0]
     .matchable
     .name === "prop"
@@ -316,8 +292,7 @@ example("Interpreter: '!prop:value' > OP[N[EP[prop]]]", function () {
 
 
 example("Interpreter: '!prop:value' > OP[N[EP[,value]]]", function () {
-  return  new Interpreter("!prop:value")
-    .pattern
+  return  Interpreter("!prop:value")
     .properties[0]
     .matchable
     .value === "value"
@@ -326,8 +301,7 @@ example("Interpreter: '!prop:value' > OP[N[EP[,value]]]", function () {
 
 
 example("Interpreter: '!*:value' > OP[N[WP]]", function () {
-  return  new Interpreter("!*:value")
-    .pattern
+  return  Interpreter("!*:value")
     .properties[0]
     .matchable instanceof WildcardProperty
 })
@@ -335,8 +309,7 @@ example("Interpreter: '!*:value' > OP[N[WP]]", function () {
 
 
 example("Interpreter: '!*:value' > OP[N[WP[value]]]", function () {
-  return  new Interpreter("!*:value")
-    .pattern
+  return  Interpreter("!*:value")
     .properties[0]
     .matchable
     .value === "value"
@@ -345,8 +318,7 @@ example("Interpreter: '!*:value' > OP[N[WP[value]]]", function () {
 
 
 example("Interpreter: 'something:*' > OP[EP[WV]]", function () {
-  return  new Interpreter("something:*")
-    .pattern
+  return  Interpreter("something:*")
     .properties[0]
     .value instanceof WildcardValue
 })
@@ -354,8 +326,7 @@ example("Interpreter: 'something:*' > OP[EP[WV]]", function () {
 
 
 example("Interpreter: 'type:<string>' > OP[EP[TV]]", function () {
-  return  new Interpreter("type:<string>")
-    .pattern
+  return  Interpreter("type:<string>")
     .properties[0]
     .value instanceof TypedValue
 })
@@ -363,8 +334,7 @@ example("Interpreter: 'type:<string>' > OP[EP[TV]]", function () {
 
 
 example("Interpreter: 'type:<string>' > OP[EP[TV[string]]]", function () {
-  return  new Interpreter("type:<string>")
-    .pattern
+  return  Interpreter("type:<string>")
     .properties[0]
     .value
     .type === "string"
@@ -373,8 +343,7 @@ example("Interpreter: 'type:<string>' > OP[EP[TV[string]]]", function () {
 
 
 example("Interpreter: 'prop:(object:inside)' > OP[EP[OP]]", function () {
-  return  new Interpreter("prop:(object:inside)")
-    .pattern
+  return  Interpreter("prop:(object:inside)")
     .properties[0]
     .value instanceof ObjectPattern
 })
@@ -382,8 +351,7 @@ example("Interpreter: 'prop:(object:inside)' > OP[EP[OP]]", function () {
 
 
 example("Interpreter: 'prop:(object:inside)' > OP[EP[OP[EP]]]", function () {
-  return  new Interpreter("prop:(object:inside)")
-    .pattern
+  return  Interpreter("prop:(object:inside)")
     .properties[0]
     .value
     .properties[0] instanceof ExactProperty
@@ -392,8 +360,7 @@ example("Interpreter: 'prop:(object:inside)' > OP[EP[OP[EP]]]", function () {
 
 
 example("Interpreter: 'prop:(object:inside)' > OP[EP[OP[EP[object]]]]", function () {
-  return  new Interpreter("prop:(object:inside)")
-    .pattern
+  return  Interpreter("prop:(object:inside)")
     .properties[0]
     .value
     .properties[0]
@@ -403,8 +370,7 @@ example("Interpreter: 'prop:(object:inside)' > OP[EP[OP[EP[object]]]]", function
 
 
 example("Interpreter: 'prop:(object:inside)' > OP[EP[OP[EP[,inside]]]]", function () {
-  return  new Interpreter("prop:(object:inside)")
-    .pattern
+  return  Interpreter("prop:(object:inside)")
     .properties[0]
     .value
     .properties[0]
@@ -414,8 +380,7 @@ example("Interpreter: 'prop:(object:inside)' > OP[EP[OP[EP[,inside]]]]", functio
 
 
 example("Interpreter: 'type:/some/array' > OP[EP[AP]]", function () {
-  return  new Interpreter("type:/some/array")
-    .pattern
+  return  Interpreter("type:/some/array")
     .properties[0]
     .value instanceof ArrayPattern
 })
@@ -423,8 +388,7 @@ example("Interpreter: 'type:/some/array' > OP[EP[AP]]", function () {
 
 
 example("Interpreter: 'type:/some/array' > OP[EP[AP[some]]]", function () {
-  return  new Interpreter("type:/some/array")
-    .pattern
+  return  Interpreter("type:/some/array")
     .properties[0]
     .value
     .matchables[0] === "some"
@@ -433,8 +397,7 @@ example("Interpreter: 'type:/some/array' > OP[EP[AP[some]]]", function () {
 
 
 example("Interpreter: 'type:/some/array' > OP[EP[AP[/array]]]", function () {
-  return  new Interpreter("type:/some/array")
-    .pattern
+  return  Interpreter("type:/some/array")
     .properties[0]
     .value
     .matchables[1] === "array"
@@ -443,8 +406,7 @@ example("Interpreter: 'type:/some/array' > OP[EP[AP[/array]]]", function () {
 
 
 example("Interpreter: 'type:/*/array' > OP[EP[AP[WV]]]", function () {
-  return  new Interpreter("type:/*/array")
-    .pattern
+  return  Interpreter("type:/*/array")
     .properties[0]
     .value
     .matchables[0] instanceof WildcardValue
@@ -453,8 +415,7 @@ example("Interpreter: 'type:/*/array' > OP[EP[AP[WV]]]", function () {
 
 
 example("Interpreter: 'type:/**/array' > OP[EP[AP[AE]]]", function () {
-  return  new Interpreter("type:/**/array")
-    .pattern
+  return  Interpreter("type:/**/array")
     .properties[0]
     .value
     .matchables[0] instanceof ArrayEllipsis
@@ -463,8 +424,7 @@ example("Interpreter: 'type:/**/array' > OP[EP[AP[AE]]]", function () {
 
 
 example("Interpreter: 'type:/**/array' > OP[EP[AP[AE[array]]]]", function () {
-  return  new Interpreter("type:/**/array")
-    .pattern
+  return  Interpreter("type:/**/array")
     .properties[0]
     .value
     .matchables[0]
@@ -474,8 +434,7 @@ example("Interpreter: 'type:/**/array' > OP[EP[AP[AE[array]]]]", function () {
 
 
 example("Interpreter: 'type:/**' > OP[EP[AP[AE]]]", function () {
-  return  new Interpreter("type:/**")
-    .pattern
+  return  Interpreter("type:/**")
     .properties[0]
     .value
     .matchables[0] instanceof ArrayEllipsis
@@ -484,8 +443,7 @@ example("Interpreter: 'type:/**' > OP[EP[AP[AE]]]", function () {
 
 
 example("Interpreter: 'type:/**' > OP[EP[AP[AE[undefined]]]]", function () {
-  return  new Interpreter("type:/**")
-    .pattern
+  return  Interpreter("type:/**")
     .properties[0]
     .value
     .matchables[0]
@@ -495,8 +453,7 @@ example("Interpreter: 'type:/**' > OP[EP[AP[AE[undefined]]]]", function () {
 
 
 example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[WV]]]", function () {
-  return  new Interpreter("type:/*/**/a/b")
-    .pattern
+  return  Interpreter("type:/*/**/a/b")
     .properties[0]
     .value
     .matchables[0] instanceof WildcardValue
@@ -505,8 +462,7 @@ example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[WV]]]", function () {
 
 
 example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[WV]]]", function () {
-  return  new Interpreter("type:/*/**/a/b")
-    .pattern
+  return  Interpreter("type:/*/**/a/b")
     .properties[0]
     .value
     .matchables[0] instanceof WildcardValue
@@ -515,8 +471,7 @@ example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[WV]]]", function () {
 
 
 example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,AE]]]", function () {
-  return  new Interpreter("type:/*/**/a/b")
-    .pattern
+  return  Interpreter("type:/*/**/a/b")
     .properties[0]
     .value
     .matchables[1] instanceof ArrayEllipsis
@@ -525,8 +480,7 @@ example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,AE]]]", function () {
 
 
 example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,AE[a]]]", function () {
-  return  new Interpreter("type:/*/**/a/b")
-    .pattern
+  return  Interpreter("type:/*/**/a/b")
     .properties[0]
     .value
     .matchables[1]
@@ -536,8 +490,7 @@ example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,AE[a]]]", function () {
 
 
 example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,,b]", function () {
-  return  new Interpreter("type:/*/**/a/b")
-    .pattern
+  return  Interpreter("type:/*/**/a/b")
     .properties[0]
     .value
     .matchables[2] === "b"
@@ -546,8 +499,7 @@ example("Interpreter: 'type:/*/**/a/b' > OP[EP[AP[,,b]", function () {
 
 
 example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP]]]", function () {
-  return  new Interpreter("a:/[/sub/array]/b")
-    .pattern
+  return  Interpreter("a:/[/sub/array]/b")
     .properties[0]
     .value
     .matchables[0] instanceof ArrayPattern
@@ -556,8 +508,7 @@ example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP]]]", function () {
 
 
 example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP]]]", function () {
-  return  new Interpreter("a:/[/sub/array]/b")
-    .pattern
+  return  Interpreter("a:/[/sub/array]/b")
     .properties[0]
     .value
     .matchables[0] instanceof ArrayPattern
@@ -566,8 +517,7 @@ example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP]]]", function () {
 
 
 example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP[sub]]]]", function () {
-  return  new Interpreter("a:/[/sub/array]/b")
-    .pattern
+  return  Interpreter("a:/[/sub/array]/b")
     .properties[0]
     .value
     .matchables[0]
@@ -577,8 +527,7 @@ example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP[sub]]]]", function () {
 
 
 example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP[,array]]]]", function () {
-  return  new Interpreter("a:/[/sub/array]/b")
-    .pattern
+  return  Interpreter("a:/[/sub/array]/b")
     .properties[0]
     .value
     .matchables[0]
@@ -588,8 +537,7 @@ example("Interpreter: 'a:/[/sub/array]/b' > OP[EP[AP[AP[,array]]]]", function ()
 
 
 example("Interpreter: 'a:/[/sub/[/sub]/array]/b' > OP[EP[AP[AP[,AP]]]]", function () {
-  return  new Interpreter("a:/[/sub/[/sub]/array]/b")
-    .pattern
+  return  Interpreter("a:/[/sub/[/sub]/array]/b")
     .properties[0]
     .value
     .matchables[0]
@@ -599,8 +547,7 @@ example("Interpreter: 'a:/[/sub/[/sub]/array]/b' > OP[EP[AP[AP[,AP]]]]", functio
 
 
 example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP]]]", function () {
-  return  new Interpreter("a:/(sub:object)/b")
-    .pattern
+  return  Interpreter("a:/(sub:object)/b")
     .properties[0]
     .value
     .matchables[0] instanceof ObjectPattern
@@ -609,8 +556,7 @@ example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP]]]", function () {
 
 
 example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP[EP]]]]", function () {
-  return  new Interpreter("a:/(sub:object)/b")
-    .pattern
+  return  Interpreter("a:/(sub:object)/b")
     .properties[0]
     .value
     .matchables[0]
@@ -620,8 +566,7 @@ example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP[EP]]]]", function () {
 
 
 example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP[EP[sub]]]]]", function () {
-  return  new Interpreter("a:/(sub:object)/b")
-    .pattern
+  return  Interpreter("a:/(sub:object)/b")
     .properties[0]
     .value
     .matchables[0]
@@ -632,8 +577,7 @@ example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP[EP[sub]]]]]", function (
 
 
 example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP[EP[,object]]]]]", function () {
-  return  new Interpreter("a:/(sub:object)/b")
-    .pattern
+  return  Interpreter("a:/(sub:object)/b")
     .properties[0]
     .value
     .matchables[0]
@@ -644,8 +588,7 @@ example("Interpreter: 'a:/(sub:object)/b' > OP[EP[AP[OP[EP[,object]]]]]", functi
 
 
 example("Interpreter: 'a:true' > OP[EP[,true]]", function () {
-  return  new Interpreter("a:true")
-    .pattern
+  return  Interpreter("a:true")
     .properties[0]
     .value === true
 })
@@ -653,8 +596,7 @@ example("Interpreter: 'a:true' > OP[EP[,true]]", function () {
 
 
 example("Interpreter: 'a:false' > OP[EP[,false]]", function () {
-  return  new Interpreter("a:false")
-    .pattern
+  return  Interpreter("a:false")
     .properties[0]
     .value === false
 })
@@ -662,8 +604,7 @@ example("Interpreter: 'a:false' > OP[EP[,false]]", function () {
 
 
 example("Interpreter: 'a:24' > OP[EP[,24]]", function () {
-  return  new Interpreter("a:24")
-    .pattern
+  return  Interpreter("a:24")
     .properties[0]
     .value === 24
 })
@@ -671,8 +612,7 @@ example("Interpreter: 'a:24' > OP[EP[,24]]", function () {
 
 
 example("Interpreter: 'a:24.7' > OP[EP[,24.7]]", function () {
-  return  new Interpreter("a:24.7")
-    .pattern
+  return  Interpreter("a:24.7")
     .properties[0]
     .value === 24.7
 })
@@ -680,8 +620,7 @@ example("Interpreter: 'a:24.7' > OP[EP[,24.7]]", function () {
 
 
 example("Interpreter: 'a:-24.7' > OP[EP[,-24.7]]", function () {
-  return  new Interpreter("a:-24.7")
-    .pattern
+  return  Interpreter("a:-24.7")
     .properties[0]
     .value === -24.7
 })
@@ -689,8 +628,7 @@ example("Interpreter: 'a:-24.7' > OP[EP[,-24.7]]", function () {
 
 
 example("Interpreter: 'a:\"true\"' > OP[EP[,\"true\"]]", function () {
-  return  new Interpreter("a:\"true\"")
-    .pattern
+  return  Interpreter("a:\"true\"")
     .properties[0]
     .value === "true"
 })
@@ -698,8 +636,7 @@ example("Interpreter: 'a:\"true\"' > OP[EP[,\"true\"]]", function () {
 
 
 example("Interpreter: 'a:\"/true/(a:b)\"' > OP[EP[,\"/true/(a:b)\"]]", function () {
-  return  new Interpreter("a:\"/true/(a:b)\"")
-    .pattern
+  return  Interpreter("a:\"/true/(a:b)\"")
     .properties[0]
     .value === "/true/(a:b)"
 })
@@ -707,8 +644,7 @@ example("Interpreter: 'a:\"/true/(a:b)\"' > OP[EP[,\"/true/(a:b)\"]]", function 
 
 
 example("Interpreter: 'a:/true' > OP[AP[true]]", function () {
-  return  new Interpreter("a:/true")
-    .pattern
+  return  Interpreter("a:/true")
     .properties[0]
     .value
     .matchables[0] === true
@@ -717,8 +653,7 @@ example("Interpreter: 'a:/true' > OP[AP[true]]", function () {
 
 
 example("Interpreter: 'a:/false' > OP[AP[false]]", function () {
-  return  new Interpreter("a:/false")
-    .pattern
+  return  Interpreter("a:/false")
     .properties[0]
     .value
     .matchables[0] === false
@@ -727,8 +662,7 @@ example("Interpreter: 'a:/false' > OP[AP[false]]", function () {
 
 
 example("Interpreter: 'a:/23' > OP[AP[23]]", function () {
-  return  new Interpreter("a:/23")
-    .pattern
+  return  Interpreter("a:/23")
     .properties[0]
     .value
     .matchables[0] === 23
@@ -737,8 +671,7 @@ example("Interpreter: 'a:/23' > OP[AP[23]]", function () {
 
 
 example("Interpreter: 'a:/23.2' > OP[AP[23.2]]", function () {
-  return  new Interpreter("a:/23.2")
-    .pattern
+  return  Interpreter("a:/23.2")
     .properties[0]
     .value
     .matchables[0] === 23.2
@@ -747,8 +680,7 @@ example("Interpreter: 'a:/23.2' > OP[AP[23.2]]", function () {
 
 
 example("Interpreter: 'a:/-23.2' > OP[AP[-23.2]]", function () {
-  return  new Interpreter("a:/-23.2")
-    .pattern
+  return  Interpreter("a:/-23.2")
     .properties[0]
     .value
     .matchables[0] === -23.2
@@ -757,8 +689,7 @@ example("Interpreter: 'a:/-23.2' > OP[AP[-23.2]]", function () {
 
 
 example("Interpreter: 'a:/\"23\"' > OP[AP[\"23\"]]", function () {
-  return  new Interpreter("a:/\"23\"")
-    .pattern
+  return  Interpreter("a:/\"23\"")
     .properties[0]
     .value
     .matchables[0] === "23"
@@ -767,8 +698,7 @@ example("Interpreter: 'a:/\"23\"' > OP[AP[\"23\"]]", function () {
 
 
 example("Interpreter: 'a:/\"true\"' > OP[AP[true]]", function () {
-  return  new Interpreter("a:/\"true\"")
-    .pattern
+  return  Interpreter("a:/\"true\"")
     .properties[0]
     .value
     .matchables[0] === "true"
@@ -777,8 +707,7 @@ example("Interpreter: 'a:/\"true\"' > OP[AP[true]]", function () {
 
 
 example("Interpreter: 'a:/\"so/th/(go:1)\"' > OP[AP[\"so/th/(go:1)\"]]", function () {
-  return  new Interpreter("a:/\"so/th/(go:1)\"")
-    .pattern
+  return  Interpreter("a:/\"so/th/(go:1)\"")
     .properties[0]
     .value
     .matchables[0] === "so/th/(go:1)"
@@ -787,8 +716,7 @@ example("Interpreter: 'a:/\"so/th/(go:1)\"' > OP[AP[\"so/th/(go:1)\"]]", functio
 
 
 example("Interpreter: 'a:'(sogo:/1/2)'' > OP[EP['(sogo:/1/2)']]", function () {
-  return  new Interpreter("a:'(sogo:/1/2)'")
-    .pattern
+  return  Interpreter("a:'(sogo:/1/2)'")
     .properties[0]
     .value === "(sogo:/1/2)"
 })
@@ -796,11 +724,12 @@ example("Interpreter: 'a:'(sogo:/1/2)'' > OP[EP['(sogo:/1/2)']]", function () {
 
 
 example("Interpreter: 'a:/'so/th/(go:1)'' > OP[AP['so/th/(go:1)']]", function () {
-  return  new Interpreter("a:/'so/th/(go:1)'")
-    .pattern
+  return  Interpreter("a:/'so/th/(go:1)'")
     .properties[0]
     .value
     .matchables[0] === "so/th/(go:1)"
 })
+
+example("Interpreter: 'a:/<number>' > OP[AP[TV['number']]]")
 
 example("Interpreter: 'a:\"some\\\"thing\"' > OP[EP[\"some\\\"thing\"]]")
