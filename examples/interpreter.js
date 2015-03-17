@@ -49,15 +49,20 @@ var object = function (source) {
   var nested = nestedChecker([","])
   var deepness = []
   var pattern = new ObjectPattern
+  var escaped = false
 
   source.split("").forEach(function (character, index) {
-    if (nested(character)) {
+    if (nested(character) && !escaped) {
       pattern.properties.push(property(buffer))
       buffer = ""
     }
 
     else
       buffer += character
+
+    escaped = false
+
+    if (character === "\\") escaped = true
   })
 
   pattern.properties.push(property(buffer))
@@ -140,13 +145,15 @@ var value = function (source) {
       source.substring(source.length - 1, source.length) === ")")
     return object(source.substring(1, source.length - 1))
 
-  if (source.substring(0, 1) === '"' &&
-      source.substring(source.length - 1, source.length) === '"')
-    return source.substring(1, source.length - 1)
-
-  if (source.substring(0, 1) === "'" &&
-      source.substring(source.length - 1, source.length) === "'")
-    return source.substring(1, source.length - 1)
+  if (( source.substring(0, 1) === '"' &&
+        source.substring(source.length - 1, source.length) === '"') ||
+      ( source.substring(0, 1) === "'" &&
+        source.substring(source.length - 1, source.length) === "'"))
+    return source
+      .substring(1, source.length - 1)
+      .split("\\\\")
+      .map(function (chunk) { return chunk.replace("\\", "") })
+      .join("\\")
 
   if (source === "true") return true
 
@@ -678,7 +685,11 @@ example("Interpreter: 'a:/<number>' > OP[AP[TV['number']]]", function () {
     .type === "number"
 })
 
-example("Interpreter: 'a:\"some\\\"thing\"' > OP[EP[\"some\\\"thing\"]]")
+example("Interpreter: 'a:\"some\\\"thing\"' > OP[EP[\"some\"thing\"]]", function () {
+  return  Interpreter("a:\"some\\\"thing\"")
+    .properties[0]
+    .value === "some\"thing"
+})
 
 example("Interpreter: '/a/b' > AP")
 
