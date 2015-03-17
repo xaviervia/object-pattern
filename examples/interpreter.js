@@ -10,66 +10,57 @@ var TypedValue = require("../object-pattern").TypedValue
 var WildcardProperty = require("../object-pattern").WildcardProperty
 var WildcardValue = require("../object-pattern").WildcardValue
 
+var nestedChecker = function (separators) {
+  var stack = []
+  var brackets = [["(", ")"], ["[", "]"]]
+  var quotes = ["'", '"']
+  separators = separators || []
+
+  return function (character) {
+    brackets.forEach(function (pair) {
+      if (character === pair[0])
+        stack.push(pair[0])
+
+      if (character === pair[1] &&
+          stack[stack.length - 1] === pair[0])
+        stack.pop()
+    })
+
+    quotes.forEach(function (quote) {
+      if (character === quote) {
+        if (stack[stack.length - 1] === quote)
+          stack.pop()
+
+        else
+          stack.push(quote)
+      }
+    })
+
+    if (stack.length > 0) return false
+
+    return separators.filter(function (separator) {
+        return character === separator
+      }).length > 0
+  }
+}
+
 var object = function (source) {
   var buffer = ""
+  var nested = nestedChecker([","])
   var deepness = []
   var pattern = new ObjectPattern
 
   source.split("").forEach(function (character, index) {
-    if (character === "," && deepness.length === 0) {
+    if (nested(character)) {
       pattern.properties.push(property(buffer))
       buffer = ""
     }
 
     else
       buffer += character
-
-    if (character === "(")
-      deepness.push({character: "("})
-
-    if (character === ")") {
-      if (deepness[deepness.length - 1].character === "(")
-        deepness.pop()
-
-      if (deepness.length === 0) {
-        pattern.properties.push(property(buffer))
-        buffer = ""
-      }
-    }
-
-    if (character === '"') {
-      if (deepness.length > 0 &&
-          deepness[deepness.length - 1].character === '"') {
-        deepness.pop()
-
-        if (deepness.length === 0) {
-          pattern.properties.push(property(buffer))
-          buffer = ""
-        }
-      }
-
-      else
-        deepness.push({character: '"'})
-    }
-
-    if (character === "'") {
-      if (deepness.length > 0 &&
-          deepness[deepness.length - 1].character === "'") {
-        deepness.pop()
-
-        if (deepness.length === 0) {
-          pattern.properties.push(property(buffer))
-          buffer = ""
-        }
-      }
-
-      else
-        deepness.push({character: "'"})
-    }
-
-    if (index + 1 === source.length && buffer !== "")
-      pattern.properties.push(property(buffer))
   })
+
+  pattern.properties.push(property(buffer))
 
   return pattern
 }
@@ -97,79 +88,21 @@ var property = function (source) {
 var array = function (source) {
   var pattern = new ArrayPattern
   var termination = false
-  var deepness = []
+  var nested = nestedChecker(["/"])
   var buffer = ""
   var list = []
 
   source.split("").forEach(function (character, index) {
-    if (character === "/" && deepness.length === 0 && buffer !== "**") {
+    if (nested(character) && buffer !== "**") {
       list.push(buffer)
       buffer = ""
     }
 
     else
       buffer += character
-
-    if (character === "(")
-      deepness.push({character: "("})
-
-    if (character === "[")
-      deepness.push({character: "["})
-
-    if (character === ")") {
-      if (deepness[deepness.length - 1].character === "(")
-        deepness.pop()
-
-      if (deepness.length === 0) {
-        list.push(buffer)
-        buffer = ""
-      }
-    }
-
-    if (character === "]") {
-      if (deepness.length > 0 &&
-          deepness[deepness.length - 1].character === "[")
-        deepness.pop()
-
-      if (deepness.length === 0) {
-        list.push(buffer)
-        buffer = ""
-      }
-    }
-
-    if (character === '"') {
-      if (deepness.length > 0 &&
-          deepness[deepness.length - 1].character === '"') {
-        deepness.pop()
-
-        if (deepness.length === 0) {
-          list.push(buffer)
-          buffer = ""
-        }
-      }
-
-      else
-        deepness.push({character: '"'})
-    }
-
-    if (character === "'") {
-      if (deepness.length > 0 &&
-          deepness[deepness.length - 1].character === "'") {
-        deepness.pop()
-
-        if (deepness.length === 0) {
-          list.push(buffer)
-          buffer = ""
-        }
-      }
-
-      else
-        deepness.push({character: "'"})
-    }
-
-    if (index + 1 === source.length)
-      list.push(buffer)
   })
+
+  list.push(buffer)
 
   pattern.matchables = list
     .filter(function (source) {
