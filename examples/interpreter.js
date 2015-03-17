@@ -663,7 +663,20 @@ example("Interpreter: 'a:/'so/th/(go:1)'' > OP[AP['so/th/(go:1)']]", function ()
     .matchables[0] === "so/th/(go:1)"
 })
 
-example("Interpreter: 'a:/<number>' > OP[AP[TV['number']]]")
+example("Interpreter: 'a:/<number>' > OP[AP[TV['number']]]", function () {
+  return  Interpreter("a:/<number>")
+    .properties[0]
+    .value
+    .matchables[0] instanceof TypedValue
+})
+
+example("Interpreter: 'a:/<number>' > OP[AP[TV['number']]]", function () {
+  return  Interpreter("a:/<number>")
+    .properties[0]
+    .value
+    .matchables[0]
+    .type === "number"
+})
 
 example("Interpreter: 'a:\"some\\\"thing\"' > OP[EP[\"some\\\"thing\"]]")
 
