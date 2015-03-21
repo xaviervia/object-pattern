@@ -127,6 +127,8 @@ var array = function (source) {
 }
 
 var value = function (source) {
+  if (source === "") return undefined
+
   if (source.substring(0, 1) === "/")
     return array(source)
 
@@ -161,16 +163,18 @@ var value = function (source) {
 
   if (!isNaN(source)) return parseFloat(source)
 
+  if (source.indexOf(":") > -1) return object(source)
+
   return source
 }
 
 var Interpreter = function (source) {
-  return object(source)
+  return value(source)
 }
 
 
 example("Interpreter: '' > OP", function () {
-  return Interpreter("") instanceof ObjectPattern
+  return Interpreter("") === undefined
 })
 
 
@@ -670,12 +674,16 @@ example("Interpreter: 'a:/'so/th/(go:1)'' > OP[AP['so/th/(go:1)']]", function ()
     .matchables[0] === "so/th/(go:1)"
 })
 
+
+
 example("Interpreter: 'a:/<number>' > OP[AP[TV['number']]]", function () {
   return  Interpreter("a:/<number>")
     .properties[0]
     .value
     .matchables[0] instanceof TypedValue
 })
+
+
 
 example("Interpreter: 'a:/<number>' > OP[AP[TV['number']]]", function () {
   return  Interpreter("a:/<number>")
@@ -685,14 +693,26 @@ example("Interpreter: 'a:/<number>' > OP[AP[TV['number']]]", function () {
     .type === "number"
 })
 
+
+
 example("Interpreter: 'a:\"some\\\"thing\"' > OP[EP[\"some\"thing\"]]", function () {
   return  Interpreter("a:\"some\\\"thing\"")
     .properties[0]
     .value === "some\"thing"
 })
 
-example("Interpreter: '/a/b' > AP")
 
-example("Interpreter: '/a/b' > AP[a]")
 
-example("Interpreter: '/a/b' > AP[,b]")
+example("Interpreter: '/a/b' > AP", function () {
+  return  Interpreter("/a/b") instanceof ArrayPattern
+})
+
+example("Interpreter: '/a/b' > AP[a]", function () {
+  return Interpreter("/a/b")
+    .matchables[0] === "a"
+})
+
+example("Interpreter: '/a/b' > AP[,b]", function () {
+  return Interpreter("/a/b")
+    .matchables[1] === "b"
+})
