@@ -391,7 +391,7 @@ ArrayEllipsis.prototype.match = function (array) {
   if ( ! this.termination)
     return {
       matched: true,
-      unmached: [] }
+      unmatched: [] }
 
   for (var index = 0; index < array.length; index ++) {
     if (this.termination instanceof Matchable) {
@@ -416,7 +416,25 @@ ArrayEllipsis.prototype.match = function (array) {
 }
 
 
-
+// parse
+// -----
+//
+// Parses an OPN (Object Pattern Notation) string and returns the corresponding
+// pattern structure.
+//
+// ### Usage
+//
+// ```javascript
+// var parse = require("object-pattern").parse
+//
+// var pattern = parse("name:*,age:<number>")
+// pattern.match({
+//   name: "Alex",
+//   age: 24
+// }) // => true
+// ```
+//
+// For more examples please refer to the [OPN examples](OPN.js)
 var parse = function (source) {
   if (source === "") return undefined
 
@@ -484,7 +502,7 @@ parse.array = function (source) {
     })
     .map(function (source, index, list) {
       if (source.substring(0, 3) === "**/")
-        return new ArrayEllipsis(source.substring(3))
+        return new ArrayEllipsis(parse(source.substring(3)))
 
       else if (source === "**")
         return new ArrayEllipsis

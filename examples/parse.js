@@ -545,12 +545,37 @@ example("parse: '/a/b' > AP", function () {
   return parse("/a/b") instanceof ArrayPattern
 })
 
+
+
 example("parse: '/a/b' > AP[a]", function () {
   return parse("/a/b")
     .matchables[0] === "a"
 })
 
+
+
 example("parse: '/a/b' > AP[,b]", function () {
   return parse("/a/b")
     .matchables[1] === "b"
+})
+
+
+
+example("parse: /** > AP[AE]", function () {
+  return parse("/**")
+    .matchables[0] instanceof ArrayEllipsis
+})
+
+
+
+example("parse: /** > AP[AE[undefined]]", function () {
+  return parse("/**")
+    .matchables[0].termation === undefined
+})
+
+
+
+example("parse: /**/3 > AP[AE[3]]", function () {
+  return parse("/**/3")
+    .matchables[0].termination === 3
 })
