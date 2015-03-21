@@ -419,8 +419,8 @@ ArrayEllipsis.prototype.match = function (array) {
 // parse
 // -----
 //
-// Parses an OPN (Object Pattern Notation) string and returns the corresponding
-// pattern structure.
+// Parses an [OPN (Object Pattern Notation)](https://github.com/xaviervia/sydney/wiki/Object-Pattern-Notation)
+// string and returns the corresponding pattern structure.
 //
 // ### Usage
 //

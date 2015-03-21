@@ -148,9 +148,9 @@ Usage:
 
 ```javascript
 var arrayMatcher = new ArrayPattern(
-  new ArrayElement( new TypedValue( 'number' ) ),
+  new TypedValue( 'number' ),
   'user',
-  new ArrayWildcard(),
+  new WildcardValue(),
   new ArrayEllipsis( 9 )
 );
 
@@ -166,41 +166,6 @@ have a slightly different interface than regular `Matchable`s because they
 need to send back the chunk of the Array that wasn't consumed by the current
 pattern so that the `ArrayPattern` can forward it to the next
 `ArrayMatchable`.
-
-ArrayElement
-------------
-
-Encapsulated any Matchable. Forwards the content of the first element
-of the argument `Array` to the `Matchable`'s `match` and returns:
-
-- `"matched"`: the result of `match`
-- `"unmatched"`: the rest of the `Array`
-
-Usage:
-
-```javascript
-var arrayElement = new ArrayElement(new TypedValue('string'));
-
-var result = arrayElement.match(['text', 'extra']);
-result.matched; // => true
-result.unmatched; // => ['extra']
-```
-
-ArrayWildcard
--------------
-
-Returns `true` unless there is nothing in the `Array`. Removes the first
-element from the `Array`.
-
-Usage:
-
-```javascript
-var arrayWildcard = new ArrayWildcard();
-
-var result = arrayWildcard.match(['anything', 'extra']);
-result.matched; // => true
-result.unmatched; // => ['extra']
-```
 
 ArrayEllipsis
 -------------
@@ -236,3 +201,22 @@ result.matched; // => true
 result.unmatched; // => ['extra']
 ```
 
+parse
+-----
+
+Parses an [OPN (Object Pattern Notation)](https://github.com/xaviervia/sydney/wiki/Object-Pattern-Notation)
+string and returns the corresponding pattern structure.
+
+### Usage
+
+```javascript
+var parse = require("object-pattern").parse
+
+var pattern = parse("name:*,age:<number>")
+pattern.match({
+  name: "Alex",
+  age: 24
+}) // => true
+```
+
+For more examples please refer to the [OPN examples](OPN.js)
