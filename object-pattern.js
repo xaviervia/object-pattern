@@ -417,6 +417,169 @@ ArrayEllipsis.prototype.match = function (array) {
 
 
 
+var parse = function (source) {
+  if (source === "") return undefined
+
+  if (source.substring(0, 1) === "/")
+    return parse.array(source)
+
+  if (source === "*")
+    return new WildcardValue
+
+  if (source.substring(0, 1) === "[" &&
+      source.substring(source.length - 1, source.length) === "]")
+    return parse.array(source.substring(1, source.length - 1))
+
+  if (source.substring(0, 1) === "<" &&
+      source.substring(source.length - 1, source.length) === ">")
+    return new TypedValue(source.substring(1, source.length - 1))
+
+  if (source.substring(0, 1) === "(" &&
+      source.substring(source.length - 1, source.length) === ")")
+    return parse.object(source.substring(1, source.length - 1))
+
+  if (( source.substring(0, 1) === '"' &&
+        source.substring(source.length - 1, source.length) === '"') ||
+      ( source.substring(0, 1) === "'" &&
+        source.substring(source.length - 1, source.length) === "'"))
+    return source
+      .substring(1, source.length - 1)
+      .split("\\\\")
+      .map(function (chunk) { return chunk.replace("\\", "") })
+      .join("\\")
+
+  if (source === "true") return true
+
+  if (source === "false") return false
+
+  if (!isNaN(source)) return parseFloat(source)
+
+  if (source.indexOf(":") > -1) return parse.object(source)
+
+  return source
+}
+
+
+parse.array = function (source) {
+  var pattern = new ArrayPattern
+  var nested = parse.nestedChecker(["/"])
+  var buffer = ""
+  var list = []
+
+  source.split("").forEach(function (character, index) {
+    if (nested(character) && buffer !== "**") {
+      list.push(buffer)
+      buffer = ""
+    }
+
+    else
+      buffer += character
+  })
+
+  list.push(buffer)
+
+  pattern.matchables = list
+    .filter(function (source) {
+      return source !== ""
+    })
+    .map(function (source, index, list) {
+      if (source.substring(0, 3) === "**/")
+        return new ArrayEllipsis(source.substring(3))
+
+      else if (source === "**")
+        return new ArrayEllipsis
+
+      return parse(source)
+    })
+
+  return pattern
+}
+
+
+parse.nestedChecker = function (separators) {
+  var stack = []
+  var brackets = [["(", ")"], ["[", "]"]]
+  var quotes = ["'", '"']
+  separators = separators || []
+
+  return function (character) {
+    brackets.forEach(function (pair) {
+      if (character === pair[0])
+        stack.push(pair[0])
+
+      if (character === pair[1] &&
+          stack[stack.length - 1] === pair[0])
+        stack.pop()
+    })
+
+    quotes.forEach(function (quote) {
+      if (character === quote) {
+        if (stack[stack.length - 1] === quote)
+          stack.pop()
+
+        else
+          stack.push(quote)
+      }
+    })
+
+    if (stack.length > 0) return false
+
+    return separators
+      .filter(function (separator) { return character === separator })
+      .length > 0
+  }
+}
+
+
+parse.object = function (source) {
+  var buffer = ""
+  var nested = parse.nestedChecker([","])
+  var deepness = []
+  var pattern = new ObjectPattern
+  var escaped = false
+
+  source.split("").forEach(function (character, index) {
+    if (nested(character) && !escaped) {
+      pattern.properties.push(parse.property(buffer))
+      buffer = ""
+    }
+
+    else
+      buffer += character
+
+    escaped = false
+
+    if (character === "\\") escaped = true
+  })
+
+  pattern.properties.push(parse.property(buffer))
+
+  return pattern
+}
+
+
+parse.property = function (source) {
+  var buffer        = ""
+  var deepness      = 0
+  var propertyName  = source.substring(0, source.indexOf(":"))
+  var propertyValue = parse(source.substring(source.indexOf(":") + 1))
+
+  if (propertyName === "*")
+    return new WildcardProperty(propertyValue)
+
+  else if (propertyName.substring(0, 1) === "!")
+    return new Negator( propertyName.substring(1) === "*" ?
+      new WildcardProperty(propertyValue) :
+      new ExactProperty(
+        propertyName.substring(1),
+        propertyValue ) )
+
+  else
+    return new ExactProperty(propertyName, propertyValue)
+}
+
+
+
 module.exports = {
   Matchable: Matchable,
   WildcardProperty: WildcardProperty,
@@ -427,5 +590,6 @@ module.exports = {
   TypedValue: TypedValue,
   ArrayPattern: ArrayPattern,
   ArrayMatchable: ArrayMatchable,
-  ArrayEllipsis: ArrayEllipsis
+  ArrayEllipsis: ArrayEllipsis,
+  parse: parse
 }
