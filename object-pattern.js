@@ -103,6 +103,16 @@ ExactProperty.prototype.match = function (object) {
 }
 
 
+ExactProperty.prototype.toString = function () {
+  var value = undefined
+
+  if ( ! isNaN(this.value)) value = this.value
+  else value = "'" + this.value + "'"
+
+  return this.name + ":" + value
+}
+
+
 
 // Negator
 // -------
@@ -167,6 +177,13 @@ ObjectPattern.prototype.match = function (object) {
     if (!this.properties[i].match(object)) return false
 
   return true
+}
+
+
+ObjectPattern.prototype.toString = function () {
+  return this.properties.map(function (property) {
+    return property.toString()
+  }).join(",")
 }
 
 
@@ -331,6 +348,13 @@ ArrayPattern.prototype.match = function (array) {
 }
 
 
+ArrayPattern.prototype.toString = function () {
+  return "/" + this.matchables.map(function (matchable) {
+    return matchable.toString()
+  }).join("/")
+}
+
+
 
 // ArrayMatchable
 // --------------
@@ -413,6 +437,11 @@ ArrayEllipsis.prototype.match = function (array) {
     matched: false,
     unmatched: []
   }
+}
+
+
+ArrayEllipsis.prototype.toString = function () {
+  return "**/" + this.termination.toString()
 }
 
 
