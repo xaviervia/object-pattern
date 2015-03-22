@@ -14,7 +14,18 @@
 //
 var Matchable = function () {}
 
+var toString = function (value) {
+  if (value instanceof ObjectPattern)
+    return "(" + value.toString() + ")"
 
+  if (value instanceof Matchable) return value.toString()
+
+  if (value instanceof ArrayMatchable) return value.toString()
+
+  if ( ! isNaN(value)) return value.toString()
+
+  return "'" + value + "'"
+}
 
 // WildcardProperty
 // ----------------
@@ -53,6 +64,10 @@ WildcardProperty.prototype.match = function (object) {
     for (key in object) if (object[key] === this.value) return true }
 
   return false
+}
+
+WildcardProperty.prototype.toString = function () {
+  return "*:" + toString(this.value)
 }
 
 
@@ -104,12 +119,7 @@ ExactProperty.prototype.match = function (object) {
 
 
 ExactProperty.prototype.toString = function () {
-  var value = undefined
-
-  if ( ! isNaN(this.value)) value = this.value
-  else value = "'" + this.value + "'"
-
-  return this.name + ":" + value
+  return this.name + ":" + toString(this.value)
 }
 
 
@@ -138,6 +148,10 @@ Negator.prototype = new Matchable
 
 Negator.prototype.match = function (object) {
   return !this.matchable.match(object)
+}
+
+Negator.prototype.toString = function () {
+  return "!" + toString(this.matchable)
 }
 
 
@@ -207,6 +221,10 @@ WildcardValue.prototype.match = function (object) {
   return object !== undefined
 }
 
+WildcardValue.prototype.toString = function () {
+  return "*"
+}
+
 
 
 // TypedValue
@@ -270,6 +288,11 @@ TypedValue.prototype.match = function (object) {
     default:
       return object instanceof this.type
   }
+}
+
+
+TypedValue.prototype.toString = function () {
+  return "<" + this.type + ">"
 }
 
 
@@ -350,7 +373,7 @@ ArrayPattern.prototype.match = function (array) {
 
 ArrayPattern.prototype.toString = function () {
   return "/" + this.matchables.map(function (matchable) {
-    return matchable.toString()
+    return toString(matchable)
   }).join("/")
 }
 
@@ -441,7 +464,7 @@ ArrayEllipsis.prototype.match = function (array) {
 
 
 ArrayEllipsis.prototype.toString = function () {
-  return "**/" + this.termination.toString()
+  return "**/" + toString(this.termination)
 }
 
 
