@@ -24,7 +24,7 @@
   "devDependencies": {
     "locco": "^1.0.2",
     "locco-markdown": "0.0.2",
-    "washington": "0.8.0"
+    "washington": "0.10.1"
   },
   "homepage": "https://github.com/xaviervia/object-pattern"
 }
