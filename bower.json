@@ -1,0 +1,31 @@
+{
+  "name": "object-pattern",
+  "main": "object-pattern.js",
+  "authors": [
+    "Xavier Via <fernando.via@gmail.com>"
+  ],
+  "description": "Object Pattern structures for JavaScript",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "pattern",
+    "object"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/xaviervia/object-pattern",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "examples",
+    ".editorconfig",
+    "Makefile",
+    "OPN.js",
+    "package.json"
+  ]
+}

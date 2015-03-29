@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../../object-pattern.js"></script>
+    <script>
+      var opn = 'some:string,describing:/this/object/<number>'
+      var pattern = OP.parse(opn)
+      var target = {
+        some: 'string',
+        describing: ['this', 'object', 20]
+      }
+
+      console.log(pattern.toString(), target, pattern.match(target))
+    </script>
+  </head>
+</html>

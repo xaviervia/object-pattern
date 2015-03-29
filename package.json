@@ -1,7 +1,7 @@
 {
   "name": "object-pattern",
   "version": "0.2.0",
-  "description": "Object Pattern structures for Node.js",
+  "description": "Object Pattern structures for JavaScript",
   "main": "object-pattern.js",
   "scripts": {
     "doc": "locco --adapter=markdown --source=*.js --adapter-readme=object-pattern.js",
