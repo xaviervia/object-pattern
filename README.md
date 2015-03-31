@@ -5,6 +5,8 @@ object-pattern
 
 Object Pattern structures for JavaScript.
 
+> You can try them out on the [Object Pattern playground](http://xaviervia.github.io/object-pattern/)
+
 `object-pattern` provides a fast and complete analog of Regular Expressions
 but aimed to describe generic object structures instead of strings.
 
