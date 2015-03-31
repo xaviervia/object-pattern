@@ -1,0 +1,30 @@
+@import "one-column-grid.css";
+@import "header.css";
+@import "output.css";
+@import "entry.css";
+
+html {
+  background: #1a1a1a;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+body {
+  background: #1a1a1a;
+  font-family: 'Lato', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  margin: 0;
+}
+
+input, textarea {
+  font-size: 1rem;
+  line-height: 1.2rem;
+  font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
+}
+
+main {
+  margin: 0;
+}

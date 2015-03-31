@@ -1,0 +1,91 @@
+/* =================================================================
+ *  BLOCKS
+ * ================================================================= */
+.header {
+  background: #272822;
+  padding-bottom: 2.4rem;
+  position: relative;
+  z-index: 10;
+  border-bottom: .1rem solid #777;
+}
+
+
+
+/* =================================================================
+ *  ELEMENTS
+ * ================================================================= */
+.header__inner {
+  margin: 0 auto;
+  width: 40rem;
+}
+
+
+.header__title {
+  color: #AAA;
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 4.8rem;
+  margin: 0 0 0 1.2rem;
+  display: inline-block;
+}
+
+
+.header__subtitle {
+  color: #AAA;
+  font-size: 1rem;
+  display: inline-block;
+  margin: 0 0 0 1.2rem;
+  padding: 0;
+  line-height: 1.2rem;
+}
+
+
+.header__entry__input {
+  transition-duration: .1s;
+  transition-property: height;
+  transition-timing-function: cubic-bezier(0, 0.51, 0.69, 1.03), ease;
+  resize: none;
+}
+
+
+.header__link {
+  text-decoration: none;
+  color: #666;
+}
+
+
+.header__link:hover,
+.header__link:focus {
+  outline: none;
+  text-decoration: underline;
+}
+
+
+
+/* =================================================================
+ *  QUERIES
+ * ================================================================= */
+@media screen and (min-width: 990px) {
+  .header {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-bottom: 0;
+    border-right: .1rem solid #333;
+    width: 35%;
+  }
+
+
+  .header__inner {
+    width: auto;
+  }
+
+
+  .entry__action.header__entry__action {
+    position: fixed;
+    bottom: 0;
+    width: 35%;
+    left: 0;
+  }
+}

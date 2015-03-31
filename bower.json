@@ -26,6 +26,7 @@
     ".editorconfig",
     "Makefile",
     "OPN.js",
-    "package.json"
+    "package.json",
+    "index.html"
   ]
 }

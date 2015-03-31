@@ -1,0 +1,111 @@
+/* =================================================================
+ *  BLOCKS
+ * ================================================================= */
+.entry {
+  margin-top: -100px;
+  margin-bottom: 100px;
+  transition-duration: .3s, .3s;
+  transition-property: margin-top, margin-bottom, max-height;
+  transition-timing-function: cubic-bezier(0.34,1.61,0.7,1), ease;
+  margin-left: auto;
+  margin-right: auto;
+  max-height: 0;
+  overflow: hidden;
+  width: 40rem;
+  z-index: 0;
+}
+
+
+
+/* =================================================================
+ *  ELEMENTS
+ * ================================================================= */
+.entry__input {
+  background: #272822;
+  border: 0;
+  box-sizing: border-box;
+  color: white;
+  display: block;
+  font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
+  margin: 0;
+  padding: 1.2rem;
+  width: 100%;
+  white-space: pre;
+}
+
+
+.entry__input + .entry__input {
+  border-top: .1rem dashed #555;
+  padding: 1.1rem 1.2rem 1.2rem;
+}
+
+
+.entry__input:focus {
+  background: #333430;
+  outline: none;
+}
+
+
+.entry__action {
+  background: #38B2E2;
+  border: 0;
+  box-sizing: border-box;
+  color: #FFF;
+  cursor: pointer;
+  font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
+  font-size: 1rem;
+  line-height: 2.4rem;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  width: 100%;
+}
+
+
+.entry__action:hover,
+.entry__action:focus {
+  background: #5Cb8dD;
+  outline: none;
+}
+
+
+.entry__action:active {
+  background: #34A4D0;
+}
+
+
+.entry__shortcut {
+  border: 1px solid #8FCDE5;
+  border-radius: .2rem;
+  color: #8FCDE5;
+  font-size: .8rem;
+  padding: .3rem;
+}
+
+
+
+/* =================================================================
+ *  MODIFIERS
+ * ================================================================= */
+.entry.is-visible {
+  margin-bottom: 2.4rem;
+  margin-top: 0;
+  max-height: 1000px;
+}
+
+
+.is-fail .entry__action {
+  background: #cd3f45;
+  cursor: auto;
+}
+
+
+.is-success .entry__action {
+  background: #9fca56;
+  cursor: auto;
+}
+
+
+.entry__shortcut.is-hidden {
+  display: none;
+}

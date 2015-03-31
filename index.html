@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Object Pattern structures for JavaScript</title>
+
+    <link
+      rel='stylesheet'
+      href='http://fonts.googleapis.com/css?family=Inconsolata:400,700' />
+
+    <link
+      rel='stylesheet'
+      href='http://fonts.googleapis.com/css?family=Lato:400,700' />
+
+    <link
+      rel="stylesheet"
+      href="pages/style.css" />
+
+    <script
+      type="text/javascript"
+      src="object-pattern.js"></script>
+
+    <script
+      type="text/javascript"
+      src="pages/mediador.js"></script>
+
+    <script
+      type="text/javascript"
+      src="pages/form.js"
+      charset="utf-8"></script>
+
+    <script
+      type="text/javascript"
+      src="pages/examples.js"
+      charset="utf-8"></script>
+
+    <script
+      type="text/javascript"
+      src="pages/output.js"
+      charset="utf-8"></script>
+
+    <script
+      type="text/javascript"
+      src="pages/entry.js"
+      charset="utf-8"></script>
+
+    <script
+      type="text/javascript"
+      src="pages/demo.js"
+      charset="utf-8"></script>
+  </head>
+
+  <body>
+    <main class="">
+      <header
+        id="header"
+        class="header">
+
+        <div class="header__inner">
+          <h1
+            id="title.header"
+            class="header__title">
+            Object Pattern
+          </h1>
+          <p
+            class="header__subtitle">
+            <a
+              href="https://github.com/xaviervia/object-pattern"
+              target="_blank"
+              class="header__link">[more about object-pattern]</a>
+          </p>
+
+          <article id="form" class="header__entry is-visible">
+            <form id="form.match">
+              <textarea
+                autofocus
+                class="entry__input entry__textarea header__entry__input"
+                id="input.match.pattern">method:GET,resource:/articles/*</textarea>
+
+              <textarea
+                id="input.match.target"
+                class="entry__input entry__textarea header__entry__input">// Try them yourself in this playground
+// Edit the pattern the object to be matched, then press
+// the ".match()" button or "Ctrl + Enter" to test
+{
+  method: "GET",
+  resource: ["articles", "have-great-events"]
+}</textarea>
+              <button
+                id="button.match"
+                class="entry__action header__entry__action"
+                type="submit">
+                .match()
+                <span class="entry__shortcut">Ctrl ⏎</span>
+              </button>
+            </form>
+          </article>
+        </div>
+      </header>
+
+      <section id="output" class="output"></section>
+
+
+    </main>
+  </body>
+</html>
