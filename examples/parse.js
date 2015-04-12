@@ -579,3 +579,28 @@ example("parse: /**/3 > AP[AE[3]]", function () {
   return parse("/**/3")
     .matchables[0].termination === 3
 })
+
+
+example("parse: @json {} > OP", function () {
+  return parse({}) instanceof ObjectPattern
+})
+
+
+example("parse: @json {key:'value'} > OP[EP]", function () {
+  return parse({ key: 'value' })
+    .properties[0] instanceof ExactProperty
+})
+
+
+example("parse: @json {key:'value'} > OP[EP[key]]", function () {
+  return parse({ key: 'value' })
+    .properties[0]
+    .name === 'key'
+})
+
+
+example("parse: @json {key:'value'} > OP[EP[,value]]", function () {
+  return parse({ key: 'value' })
+    .properties[0]
+    .value === 'value'
+})

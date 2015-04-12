@@ -724,6 +724,8 @@
   //
   // For more examples please refer to the [OPN examples](OPN.js)
   var parse = function (source) {
+    if (source instanceof Object) return parseObject(source)
+
     if (source === "") return undefined
 
     if (source.substring(0, 1) === "/")
@@ -882,6 +884,37 @@
 
     else
       return new ExactProperty(propertyName, propertyValue)
+  }
+
+
+
+  // ### parseObject
+  //
+  // Parses an endpoint constructed as a JavaScript object
+  // and returns the corresponding pattern structure.
+  //
+  // Usage:
+  //
+  // ```javascript
+  // var parseObject = require("object-pattern").parseObject
+  //
+  // var pattern = parse({ name: "*", age: "<number>"})
+  // pattern.match({
+  //   name: "Alex",
+  //   age: 24
+  // }) // => true
+  // ```
+  //
+  var parseObject = function (object) {
+    var pattern = new ObjectPattern
+
+    pattern.properties = Object
+      .keys(object)
+      .map(function (key) {
+        return new ExactProperty(key, object[key])
+      })
+
+    return pattern
   }
 
 
