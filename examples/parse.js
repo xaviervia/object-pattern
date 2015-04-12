@@ -814,3 +814,11 @@ example("parse: @json {prop:['some','array']} > OP[EP[AP[,'array']]]", function 
     .value
     .matchables[1] === 'array'
 })
+
+
+example("parse: @json {prop:['*','array']} > OP[EP[AP[WV]]]", function () {
+  return parse({prop:['*','array']})
+    .properties[0]
+    .value
+    .matchables[0] instanceof WildcardValue
+})

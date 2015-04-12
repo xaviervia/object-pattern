@@ -953,7 +953,7 @@
   parseObject.array = function (array) {
     var pattern = new ArrayPattern
     pattern.matchables = array.map(function (matchable) {
-      return matchable
+      return parseObject.value(matchable)
     })
     return pattern
   }
