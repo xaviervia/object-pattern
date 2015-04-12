@@ -758,3 +758,36 @@ example("parse: @json { 'type': '<string>'} > OP[EP[TV[string]]]", function () {
     .value
     .type === "string"
 })
+
+
+example("parse: @json {prop:{object:'inside'}} > OP[EP[OP]]", function () {
+  return parse({prop:{object:'inside'}})
+    .properties[0]
+    .value instanceof ObjectPattern
+})
+
+
+example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP]]]", function () {
+  return parse({prop:{object:'inside'}})
+    .properties[0]
+    .value
+    .properties[0] instanceof ExactProperty
+})
+
+
+example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP[object]]]]", function () {
+  return parse({prop:{object:'inside'}})
+    .properties[0]
+    .value
+    .properties[0]
+    .name === "object"
+})
+
+
+example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP[,inside]]]]", function () {
+  return parse({prop:{object:'inside'}})
+    .properties[0]
+    .value
+    .properties[0]
+    .value === "inside"
+})

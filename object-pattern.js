@@ -932,6 +932,9 @@
 
 
   parseObject.value = function (object) {
+    if (object instanceof Object)
+      return parseObject(object)
+
     if (object === "*")
       return new WildcardValue
 
