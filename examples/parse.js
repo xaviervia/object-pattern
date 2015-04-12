@@ -743,3 +743,18 @@ example("parse: @json { '!something': '*'} > OP[N[EP[,WV]]]", function () {
     .matchable
     .value instanceof WildcardValue
 })
+
+
+example("parse: @json { 'type': '<string>'} > OP[EP[TV]]", function () {
+  return parse({ 'type': "<string>" })
+    .properties[0]
+    .value instanceof TypedValue
+})
+
+
+example("parse: @json { 'type': '<string>'} > OP[EP[TV[string]]]", function () {
+  return parse({ 'type': "<string>" })
+    .properties[0]
+    .value
+    .type === "string"
+})

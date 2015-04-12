@@ -934,7 +934,12 @@
   parseObject.value = function (object) {
     if (object === "*")
       return new WildcardValue
-      
+
+    if (object.substring &&
+        object.substring(0, 1) === "<" &&
+        object.substring(object.length - 1) === ">")
+      return new TypedValue(object.substring(1, object.length - 1))
+
     return object
   }
 
