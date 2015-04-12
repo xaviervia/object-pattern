@@ -906,7 +906,11 @@
   // ```
   //
   var parseObject = function (object) {
-    var pattern = new ObjectPattern
+    var pattern = undefined
+
+    if (object instanceof Array) return parseObject.value(object)
+
+    pattern = new ObjectPattern
 
     pattern.properties = Object
       .keys(object)
@@ -966,7 +970,7 @@
       .filter(function (matchable, index, list) {
         if (list[index - 1] && list[index - 1] instanceof ArrayEllipsis)
           return false
-        
+
         return true
       })
 

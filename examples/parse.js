@@ -997,3 +997,102 @@ example("parse: {a:[{sub:'object'},'b']} > OP[EP[AP[OP[EP[,object]]]]]", functio
     .properties[0]
     .value === "object"
 })
+
+
+
+example("parse: {a:true} > OP[EP[,true]]", function () {
+  return parse({a:true})
+    .properties[0]
+    .value === true
+})
+
+
+
+example("parse: {a:false} > OP[EP[,false]]", function () {
+  return parse({a:false})
+    .properties[0]
+    .value === false
+})
+
+
+
+example("parse: {a:24} > OP[EP[,24]]", function () {
+  return parse({a:24})
+    .properties[0]
+    .value === 24
+})
+
+
+
+example("parse: {a:24.7} > OP[EP[,24.7]]", function () {
+  return parse({a:24.7})
+    .properties[0]
+    .value === 24.7
+})
+
+
+
+example("parse: {a:-24.7} > OP[EP[,-24.7]]", function () {
+  return parse({a:-24.7})
+    .properties[0]
+    .value === -24.7
+})
+
+
+
+example("parse: {a:'true'} > OP[EP[,'true']]", function () {
+  return parse({a:"true"})
+    .properties[0]
+    .value === "true"
+})
+
+
+
+example("parse: {a:[true]} > OP[AP[true]]", function () {
+  return parse({a:[true]})
+    .properties[0]
+    .value
+    .matchables[0] === true
+})
+
+
+
+example("parse: {a:[false]} > OP[AP[false]]", function () {
+  return parse({a:[false]})
+    .properties[0]
+    .value
+    .matchables[0] === false
+})
+
+
+
+example("parse: {a:['<number>']} > OP[AP[TV['number']]]", function () {
+  return parse({a:['<number>']})
+    .properties[0]
+    .value
+    .matchables[0] instanceof TypedValue
+})
+
+
+
+example("parse: {a:['<number>']} > OP[AP[TV['number']]]", function () {
+  return parse({a:['<number>']})
+    .properties[0]
+    .value
+    .matchables[0]
+    .type === "number"
+})
+
+
+
+example("parse:['**'] > AP[AE]", function () {
+  return parse(['**'])
+    .matchables[0] instanceof ArrayEllipsis
+})
+
+
+
+example("parse:['**'] > AP[AE]", function () {
+  return parse(['**'])
+    .matchables[0].termination === undefined
+})
