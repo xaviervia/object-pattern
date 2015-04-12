@@ -888,3 +888,41 @@ example("parse: @json {prop:['**']} > OP[EP[AP[AE[undefined]]]]", function () {
     .matchables[0]
     .termination === undefined
 })
+
+
+
+
+example("parse: {type:['*','**','a','b']} > OP[EP[AP[WV]]]", function () {
+  return parse({type:['*','**','a','b']})
+    .properties[0]
+    .value
+    .matchables[0] instanceof WildcardValue
+})
+
+
+
+example("parse: {type:['*','**','a','b']} > OP[EP[AP[,AE]]]", function () {
+  return parse({type:['*','**','a','b']})
+    .properties[0]
+    .value
+    .matchables[1] instanceof ArrayEllipsis
+})
+
+
+
+example("parse: {type:['*','**','a','b']} > OP[EP[AP[,AE[a]]]", function () {
+  return parse({type:['*','**','a','b']})
+    .properties[0]
+    .value
+    .matchables[1]
+    .termination === "a"
+})
+
+
+
+example("parse: {type:['*','**','a','b']} > OP[EP[AP[,,b]", function () {
+  return parse({type:['*','**','a','b']})
+    .properties[0]
+    .value
+    .matchables[2] === "b"
+})
