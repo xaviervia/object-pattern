@@ -822,3 +822,28 @@ example("parse: @json {prop:['*','array']} > OP[EP[AP[WV]]]", function () {
     .value
     .matchables[0] instanceof WildcardValue
 })
+
+
+example("parse: @json {prop:['**','array']} > OP[EP[AP[AE]]]", function () {
+  return parse({prop:['**','array']})
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayEllipsis
+})
+
+
+example("parse: @json {prop:['**','array']} > OP[EP[AP[AE[array]]]]", function () {
+  return parse({prop:['**','array']})
+    .properties[0]
+    .value
+    .matchables[0]
+    .termination === 'array'
+})
+
+
+example("parse: @json {prop:['**','array']} > OP[EP[AP[,undefined]]]", function () {
+  return parse({prop:['**','array']})
+    .properties[0]
+    .value
+    .matchables[1] === undefined
+})

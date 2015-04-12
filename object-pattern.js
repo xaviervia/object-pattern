@@ -952,9 +952,24 @@
 
   parseObject.array = function (array) {
     var pattern = new ArrayPattern
-    pattern.matchables = array.map(function (matchable) {
-      return parseObject.value(matchable)
-    })
+    pattern.matchables = array
+      .map(function (matchable, index, list) {
+        if (matchable === '**')
+          if (list[index + 1])
+            return new ArrayEllipsis(parseObject.value(list[index + 1]))
+          else
+            return new ArrayEllipsis()
+
+        return parseObject.value(matchable)
+      })
+
+      .filter(function (matchable, index, list) {
+        if (list[index - 1] && list[index - 1] instanceof ArrayEllipsis)
+          return false
+        
+        return true
+      })
+
     return pattern
   }
 
