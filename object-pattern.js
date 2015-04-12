@@ -271,6 +271,20 @@
     return "'" + value + "'"
   }
 
+  var toJSON = function (value) {
+    if (value instanceof ObjectPattern ||
+        value instanceof ArrayPattern)
+      return value.toJSON()
+
+    if (value instanceof WildcardValue)
+      return '*'
+
+    if (value instanceof TypedValue)
+      return '<' + value.type + '>'
+
+    return value
+  }
+
   // ### WildcardProperty
   //
   // Returns `true` if the value of any property is `===` to the assigned value.
@@ -440,6 +454,30 @@
     return this.properties.map(function (property) {
       return property.toString()
     }).join(",")
+  }
+
+
+  ObjectPattern.prototype.toJSON = function () {
+    var json = {}
+
+    this.properties.forEach(function (property) {
+      if (property instanceof ExactProperty)
+        return json[property.name] = toJSON(property.value)
+
+      if (property instanceof WildcardProperty)
+        return json['*'] = toJSON(property.value)
+
+      if (property instanceof Negator)
+        if (property.matchable instanceof ExactProperty)
+          return json['!' + property.matchable.name] =
+            toJSON(property.matchable.value)
+
+        else if (property.matchable instanceof WildcardProperty)
+          return json['!*'] =
+            toJSON(property.matchable.value)
+    })
+
+    return json
   }
 
 
@@ -614,6 +652,22 @@
     return "/" + this.matchables.map(function (matchable) {
       return toString(matchable)
     }).join("/")
+  }
+
+
+  ArrayPattern.prototype.toJSON = function () {
+    var json = []
+
+    this.matchables.forEach(function (matchable) {
+      if (matchable instanceof ArrayEllipsis) {
+        json.push(toJSON('**'))
+        json.push(toJSON(matchable.termination))
+      }
+
+      else json.push(toJSON(matchable))
+    })
+
+    return json
   }
 
 
