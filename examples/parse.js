@@ -604,3 +604,62 @@ example("parse: @json {key:'value'} > OP[EP[,value]]", function () {
     .properties[0]
     .value === 'value'
 })
+
+
+example("parse: @json {*:'value'} > OP[WP]", function () {
+  return parse({ '*': 'value' })
+    .properties[0] instanceof WildcardProperty
+})
+
+
+example("parse: @json {*:'value'} > OP[WP[value]]", function () {
+  return parse({ '*': 'value' })
+    .properties[0]
+    .value === 'value'
+})
+
+
+example("parse: @json {*:'value',other:23} > OP[WP,EP]", function () {
+  var properties = parse({ '*': 'value', other: 23 }).properties
+
+  return  properties[0] instanceof WildcardProperty &&
+          properties[1] instanceof ExactProperty
+})
+
+
+example("parse: @json {'!prop':'value'} > OP[N[EP]]", function () {
+  return parse({ '!prop': 'value' })
+    .properties[0]
+    .matchable instanceof ExactProperty
+})
+
+
+example("parse: @json {'!prop':'value'} > OP[N[EP[prop]]]", function () {
+  return parse({ '!prop': 'value' })
+    .properties[0]
+    .matchable
+    .name === "prop"
+})
+
+
+example("parse: @json {'!prop':'value'} > OP[N[EP[,value]]]", function () {
+  return parse({ '!prop': 'value' })
+    .properties[0]
+    .matchable
+    .value === "value"
+})
+
+
+example("parse: @json {'!*':'value'} > OP[N[WP]]", function () {
+  return parse({ '!*': 'value' })
+    .properties[0]
+    .matchable instanceof WildcardProperty
+})
+
+
+example("parse: @json {'!*':'value'} > OP[N[WP[value]]]", function () {
+  return parse({ '!*': 'value' })
+    .properties[0]
+    .matchable
+    .value === "value"
+})

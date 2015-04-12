@@ -911,6 +911,17 @@
     pattern.properties = Object
       .keys(object)
       .map(function (key) {
+        if (key === "*")
+          return new WildcardProperty(object[key])
+
+        if (key.substring(0, 1) === "!")
+          if (key.substring(1) === "*")
+            return new Negator(
+              new WildcardProperty( object[key] ) )
+          else
+            return new Negator(
+              new ExactProperty( key.substring(1), object[key] ) )
+
         return new ExactProperty(key, object[key])
       })
 
