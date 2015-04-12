@@ -278,15 +278,6 @@ example("parse: 'type:/*/**/a/b' > OP[EP[AP[WV]]]", function () {
 
 
 
-example("parse: 'type:/*/**/a/b' > OP[EP[AP[WV]]]", function () {
-  return parse("type:/*/**/a/b")
-    .properties[0]
-    .value
-    .matchables[0] instanceof WildcardValue
-})
-
-
-
 example("parse: 'type:/*/**/a/b' > OP[EP[AP[,AE]]]", function () {
   return parse("type:/*/**/a/b")
     .properties[0]
@@ -616,15 +607,18 @@ example("parse: /**/3 > AP[AE[3]]", function () {
 })
 
 
+
 example("parse: @json {} > OP", function () {
   return parse({}) instanceof ObjectPattern
 })
+
 
 
 example("parse: @json {key:'value'} > OP[EP]", function () {
   return parse({ key: 'value' })
     .properties[0] instanceof ExactProperty
 })
+
 
 
 example("parse: @json {key:'value'} > OP[EP[key]]", function () {
@@ -634,11 +628,13 @@ example("parse: @json {key:'value'} > OP[EP[key]]", function () {
 })
 
 
+
 example("parse: @json {key:'value'} > OP[EP[,value]]", function () {
   return parse({ key: 'value' })
     .properties[0]
     .value === 'value'
 })
+
 
 
 example("parse: @json {*:'value'} > OP[WP]", function () {
@@ -647,11 +643,13 @@ example("parse: @json {*:'value'} > OP[WP]", function () {
 })
 
 
+
 example("parse: @json {*:'value'} > OP[WP[value]]", function () {
   return parse({ '*': 'value' })
     .properties[0]
     .value === 'value'
 })
+
 
 
 example("parse: @json {*:'value',other:23} > OP[WP,EP]", function () {
@@ -662,11 +660,13 @@ example("parse: @json {*:'value',other:23} > OP[WP,EP]", function () {
 })
 
 
+
 example("parse: @json {'!prop':'value'} > OP[N[EP]]", function () {
   return parse({ '!prop': 'value' })
     .properties[0]
     .matchable instanceof ExactProperty
 })
+
 
 
 example("parse: @json {'!prop':'value'} > OP[N[EP[prop]]]", function () {
@@ -677,6 +677,7 @@ example("parse: @json {'!prop':'value'} > OP[N[EP[prop]]]", function () {
 })
 
 
+
 example("parse: @json {'!prop':'value'} > OP[N[EP[,value]]]", function () {
   return parse({ '!prop': 'value' })
     .properties[0]
@@ -685,11 +686,13 @@ example("parse: @json {'!prop':'value'} > OP[N[EP[,value]]]", function () {
 })
 
 
+
 example("parse: @json {'!*':'value'} > OP[N[WP]]", function () {
   return parse({ '!*': 'value' })
     .properties[0]
     .matchable instanceof WildcardProperty
 })
+
 
 
 example("parse: @json {'!*':'value'} > OP[N[WP[value]]]", function () {
@@ -700,6 +703,7 @@ example("parse: @json {'!*':'value'} > OP[N[WP[value]]]", function () {
 })
 
 
+
 example("parse: @json { something: '*'} > OP[EP[,WV]]", function () {
   return parse({ something: "*" })
     .properties[0]
@@ -707,11 +711,13 @@ example("parse: @json { something: '*'} > OP[EP[,WV]]", function () {
 })
 
 
+
 example("parse: @json { something: '*'} > OP[EP[,WV]]", function () {
   return parse({ something: "*" })
     .properties[0]
     .value instanceof WildcardValue
 })
+
 
 
 example("parse: @json { '*': '*'} > OP[WP[WV]]", function () {
@@ -719,6 +725,7 @@ example("parse: @json { '*': '*'} > OP[WP[WV]]", function () {
     .properties[0]
     .value instanceof WildcardValue
 })
+
 
 
 example("parse: @json { '!*': '*'} > OP[N[WP[WV]]]", function () {
@@ -729,12 +736,14 @@ example("parse: @json { '!*': '*'} > OP[N[WP[WV]]]", function () {
 })
 
 
+
 example("parse: @json { '!something': '*'} > OP[N[EP[something]]]", function () {
   return parse({ '!something': "*" })
     .properties[0]
     .matchable
     .name === 'something'
 })
+
 
 
 example("parse: @json { '!something': '*'} > OP[N[EP[,WV]]]", function () {
@@ -745,11 +754,13 @@ example("parse: @json { '!something': '*'} > OP[N[EP[,WV]]]", function () {
 })
 
 
+
 example("parse: @json { 'type': '<string>'} > OP[EP[TV]]", function () {
   return parse({ 'type': "<string>" })
     .properties[0]
     .value instanceof TypedValue
 })
+
 
 
 example("parse: @json { 'type': '<string>'} > OP[EP[TV[string]]]", function () {
@@ -760,11 +771,13 @@ example("parse: @json { 'type': '<string>'} > OP[EP[TV[string]]]", function () {
 })
 
 
+
 example("parse: @json {prop:{object:'inside'}} > OP[EP[OP]]", function () {
   return parse({prop:{object:'inside'}})
     .properties[0]
     .value instanceof ObjectPattern
 })
+
 
 
 example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP]]]", function () {
@@ -773,6 +786,7 @@ example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP]]]", function () {
     .value
     .properties[0] instanceof ExactProperty
 })
+
 
 
 example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP[object]]]]", function () {
@@ -784,6 +798,7 @@ example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP[object]]]]", functi
 })
 
 
+
 example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP[,inside]]]]", function () {
   return parse({prop:{object:'inside'}})
     .properties[0]
@@ -793,11 +808,13 @@ example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP[,inside]]]]", funct
 })
 
 
+
 example("parse: @json {prop:['some','array']} > OP[EP[AP]]", function () {
   return parse({prop:['some','array']})
     .properties[0]
     .value instanceof ArrayPattern
 })
+
 
 
 example("parse: @json {prop:['some','array']} > OP[EP[AP['some']]]", function () {
@@ -808,12 +825,14 @@ example("parse: @json {prop:['some','array']} > OP[EP[AP['some']]]", function ()
 })
 
 
+
 example("parse: @json {prop:['some','array']} > OP[EP[AP[,'array']]]", function () {
   return parse({prop:['some','array']})
     .properties[0]
     .value
     .matchables[1] === 'array'
 })
+
 
 
 example("parse: @json {prop:['*','array']} > OP[EP[AP[WV]]]", function () {
@@ -824,12 +843,14 @@ example("parse: @json {prop:['*','array']} > OP[EP[AP[WV]]]", function () {
 })
 
 
+
 example("parse: @json {prop:['**','array']} > OP[EP[AP[AE]]]", function () {
   return parse({prop:['**','array']})
     .properties[0]
     .value
     .matchables[0] instanceof ArrayEllipsis
 })
+
 
 
 example("parse: @json {prop:['**','array']} > OP[EP[AP[AE[array]]]]", function () {
@@ -841,6 +862,7 @@ example("parse: @json {prop:['**','array']} > OP[EP[AP[AE[array]]]]", function (
 })
 
 
+
 example("parse: @json {prop:['**','array']} > OP[EP[AP[,undefined]]]", function () {
   return parse({prop:['**','array']})
     .properties[0]
@@ -849,12 +871,14 @@ example("parse: @json {prop:['**','array']} > OP[EP[AP[,undefined]]]", function 
 })
 
 
+
 example("parse: @json {prop:['**']} > OP[EP[AP[AE]]]", function () {
   return parse({prop:['**']})
     .properties[0]
     .value
     .matchables[0] instanceof ArrayEllipsis
 })
+
 
 
 example("parse: @json {prop:['**']} > OP[EP[AP[AE[undefined]]]]", function () {
