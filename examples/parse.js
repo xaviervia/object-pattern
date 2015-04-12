@@ -847,3 +847,20 @@ example("parse: @json {prop:['**','array']} > OP[EP[AP[,undefined]]]", function 
     .value
     .matchables[1] === undefined
 })
+
+
+example("parse: @json {prop:['**']} > OP[EP[AP[AE]]]", function () {
+  return parse({prop:['**']})
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayEllipsis
+})
+
+
+example("parse: @json {prop:['**']} > OP[EP[AP[AE[undefined]]]]", function () {
+  return parse({prop:['**']})
+    .properties[0]
+    .value
+    .matchables[0]
+    .termination === undefined
+})
