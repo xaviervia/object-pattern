@@ -932,6 +932,9 @@
 
 
   parseObject.value = function (object) {
+    if (object instanceof Array)
+      return parseObject.array(object)
+
     if (object instanceof Object)
       return parseObject(object)
 
@@ -944,6 +947,15 @@
       return new TypedValue(object.substring(1, object.length - 1))
 
     return object
+  }
+
+
+  parseObject.array = function (array) {
+    var pattern = new ArrayPattern
+    pattern.matchables = array.map(function (matchable) {
+      return matchable
+    })
+    return pattern
   }
 
 

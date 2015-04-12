@@ -791,3 +791,26 @@ example("parse: @json {prop:{object:'inside'}} > OP[EP[OP[EP[,inside]]]]", funct
     .properties[0]
     .value === "inside"
 })
+
+
+example("parse: @json {prop:['some','array']} > OP[EP[AP]]", function () {
+  return parse({prop:['some','array']})
+    .properties[0]
+    .value instanceof ArrayPattern
+})
+
+
+example("parse: @json {prop:['some','array']} > OP[EP[AP['some']]]", function () {
+  return parse({prop:['some','array']})
+    .properties[0]
+    .value
+    .matchables[0] === 'some'
+})
+
+
+example("parse: @json {prop:['some','array']} > OP[EP[AP[,'array']]]", function () {
+  return parse({prop:['some','array']})
+    .properties[0]
+    .value
+    .matchables[1] === 'array'
+})
