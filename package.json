@@ -22,9 +22,9 @@
     "url": "https://github.com/xaviervia/object-pattern/issues"
   },
   "devDependencies": {
-    "locco": "^1.0.2",
+    "locco": "1.0.2",
     "locco-markdown": "0.0.2",
-    "washington": "0.10.1"
+    "washington": "0.11.2"
   },
   "homepage": "https://github.com/xaviervia/object-pattern"
 }

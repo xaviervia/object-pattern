@@ -911,23 +911,32 @@
     pattern.properties = Object
       .keys(object)
       .map(function (key) {
+        var value = parseObject.value( object[key] )
+
         if (key === "*")
-          return new WildcardProperty(object[key])
+          return new WildcardProperty(value)
 
         if (key.substring(0, 1) === "!")
           if (key.substring(1) === "*")
             return new Negator(
-              new WildcardProperty( object[key] ) )
+              new WildcardProperty( value ) )
           else
             return new Negator(
-              new ExactProperty( key.substring(1), object[key] ) )
+              new ExactProperty( key.substring(1), value ) )
 
-        return new ExactProperty(key, object[key])
+        return new ExactProperty(key, value)
       })
 
     return pattern
   }
 
+
+  parseObject.value = function (object) {
+    if (object === "*")
+      return new WildcardValue
+      
+    return object
+  }
 
 
   return {

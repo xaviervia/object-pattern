@@ -107,6 +107,41 @@ example("parse: 'something:*' > OP[EP[WV]]", function () {
 
 
 
+example("parse: '*:*' > OP[WP[WV]]", function () {
+  return parse("*:*")
+    .properties[0]
+    .value instanceof WildcardValue
+})
+
+
+
+example("parse: '!*:*' > OP[N[WP[WV]]]", function () {
+  return parse("!*:*")
+    .properties[0]
+    .matchable
+    .value instanceof WildcardValue
+})
+
+
+
+example("parse: '!something:*' > OP[N[EP[something]]]", function () {
+  return parse("!something:*")
+    .properties[0]
+    .matchable
+    .name === 'something'
+})
+
+
+
+example("parse: '!something:*' > OP[N[EP[,WV]]]", function () {
+  return parse("!something:*")
+    .properties[0]
+    .matchable
+    .value instanceof WildcardValue
+})
+
+
+
 example("parse: 'type:<string>' > OP[EP[TV]]", function () {
   return parse("type:<string>")
     .properties[0]
@@ -662,4 +697,49 @@ example("parse: @json {'!*':'value'} > OP[N[WP[value]]]", function () {
     .properties[0]
     .matchable
     .value === "value"
+})
+
+
+example("parse: @json { something: '*'} > OP[EP[,WV]]", function () {
+  return parse({ something: "*" })
+    .properties[0]
+    .value instanceof WildcardValue
+})
+
+
+example("parse: @json { something: '*'} > OP[EP[,WV]]", function () {
+  return parse({ something: "*" })
+    .properties[0]
+    .value instanceof WildcardValue
+})
+
+
+example("parse: @json { '*': '*'} > OP[WP[WV]]", function () {
+  return parse({ '*': "*" })
+    .properties[0]
+    .value instanceof WildcardValue
+})
+
+
+example("parse: @json { '!*': '*'} > OP[N[WP[WV]]]", function () {
+  return parse({ '!*': "*" })
+    .properties[0]
+    .matchable
+    .value instanceof WildcardValue
+})
+
+
+example("parse: @json { '!something': '*'} > OP[N[EP[something]]]", function () {
+  return parse({ '!something': "*" })
+    .properties[0]
+    .matchable
+    .name === 'something'
+})
+
+
+example("parse: @json { '!something': '*'} > OP[N[EP[,WV]]]", function () {
+  return parse({ '!something': "*" })
+    .properties[0]
+    .matchable
+    .value instanceof WildcardValue
 })
