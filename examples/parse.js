@@ -315,15 +315,6 @@ example("parse: 'a:/[/sub/array]/b' > OP[EP[AP[AP]]]", function () {
 
 
 
-example("parse: 'a:/[/sub/array]/b' > OP[EP[AP[AP]]]", function () {
-  return parse("a:/[/sub/array]/b")
-    .properties[0]
-    .value
-    .matchables[0] instanceof ArrayPattern
-})
-
-
-
 example("parse: 'a:/[/sub/array]/b' > OP[EP[AP[AP[sub]]]]", function () {
   return parse("a:/[/sub/array]/b")
     .properties[0]
@@ -925,4 +916,33 @@ example("parse: {type:['*','**','a','b']} > OP[EP[AP[,,b]", function () {
     .properties[0]
     .value
     .matchables[2] === "b"
+})
+
+
+
+example("parse: {a:[['sub','array'],'b']} > OP[EP[AP[AP]]]", function () {
+  return parse({a:[['sub','array'],'b']})
+    .properties[0]
+    .value
+    .matchables[0] instanceof ArrayPattern
+})
+
+
+
+example("parse: {a:[['sub','array'],'b']} > OP[EP[AP[AP[sub]]]]", function () {
+  return parse({a:[['sub','array'],'b']})
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchables[0] === "sub"
+})
+
+
+
+example("parse: {a:[['sub','array'],'b']} > OP[EP[AP[AP[,array]]]]", function () {
+  return parse({a:[['sub','array'],'b']})
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchables[1] === "array"
 })
