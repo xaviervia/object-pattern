@@ -946,3 +946,54 @@ example("parse: {a:[['sub','array'],'b']} > OP[EP[AP[AP[,array]]]]", function ()
     .matchables[0]
     .matchables[1] === "array"
 })
+
+
+
+example("parse: {a:[['sub',['sub'],'array'],'b']} > OP[EP[AP[AP[,AP]]]]", function () {
+  return parse({a:[['sub',['sub'],'array'],'b']})
+    .properties[0]
+    .value
+    .matchables[0]
+    .matchables[1] instanceof ArrayPattern
+})
+
+
+
+example("parse: {a:[{sub:'object'},'b']} > OP[EP[AP[OP]]]", function () {
+  return parse({a:[{sub:'object'},'b']})
+    .properties[0]
+    .value
+    .matchables[0] instanceof ObjectPattern
+})
+
+
+
+example("parse: {a:[{sub:'object'},'b']} > OP[EP[AP[OP[EP]]]]", function () {
+  return parse({a:[{sub:'object'},'b']})
+    .properties[0]
+    .value
+    .matchables[0]
+    .properties[0] instanceof ExactProperty
+})
+
+
+
+example("parse: {a:[{sub:'object'},'b']} > OP[EP[AP[OP[EP[sub]]]]]", function () {
+  return parse({a:[{sub:'object'},'b']})
+    .properties[0]
+    .value
+    .matchables[0]
+    .properties[0]
+    .name === "sub"
+})
+
+
+
+example("parse: {a:[{sub:'object'},'b']} > OP[EP[AP[OP[EP[,object]]]]]", function () {
+  return parse({a:[{sub:'object'},'b']})
+    .properties[0]
+    .value
+    .matchables[0]
+    .properties[0]
+    .value === "object"
+})
