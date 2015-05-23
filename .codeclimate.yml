@@ -6,3 +6,5 @@ languages:
 
 exclude_paths:
   - "examples/*"
+  - "test.js"
+  - "OPN.js"
