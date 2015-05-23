@@ -314,7 +314,7 @@
 
 
   WildcardProperty.prototype.match = function (object) {
-    var key = undefined
+    var key;
 
     if (this.value instanceof Matchable) {
       for (key in object) if (this.value.match(object[key])) return true }
@@ -462,19 +462,19 @@
 
     this.properties.forEach(function (property) {
       if (property instanceof ExactProperty)
-        return json[property.name] = toJSON(property.value)
+        return (json[property.name] = toJSON(property.value))
 
       if (property instanceof WildcardProperty)
-        return json['*'] = toJSON(property.value)
+        return (json['*'] = toJSON(property.value))
 
       if (property instanceof Negator)
         if (property.matchable instanceof ExactProperty)
-          return json['!' + property.matchable.name] =
-            toJSON(property.matchable.value)
+          return (json['!' + property.matchable.name] =
+            toJSON(property.matchable.value))
 
         else if (property.matchable instanceof WildcardProperty)
-          return json['!*'] =
-            toJSON(property.matchable.value)
+          return (json['!*'] =
+            toJSON(property.matchable.value))
     })
 
     return json
@@ -960,7 +960,7 @@
   // ```
   //
   var parseObject = function (object) {
-    var pattern = undefined
+    var pattern;
 
     if (object instanceof Array) return parseObject.value(object)
 
