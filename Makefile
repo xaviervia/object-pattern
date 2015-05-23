@@ -1,3 +1,6 @@
+cov:
+	npm run cov
+
 doc:
 	npm run doc
 
