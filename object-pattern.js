@@ -545,23 +545,18 @@
     switch (this.type) {
       case 'array':
         return JSON.stringify(object).substring(0, 1) === '['
-        break;
 
       case 'boolean':
         return object === true || object === false
-        break
 
       case 'number':
         return JSON.stringify(object) === '' + object
-        break
 
       case 'object':
         return (JSON.stringify(object) || '').substring(0, 1) === '{'
-        break
 
       case 'string':
         return JSON.stringify(object) === '"' + object + '"'
-        break
 
       default:
         return object instanceof this.type
@@ -896,7 +891,6 @@
   parse.object = function (source) {
     var buffer = ""
     var nested = parse.nestedChecker([","])
-    var deepness = []
     var pattern = new ObjectPattern
     var escaped = false
 
@@ -921,8 +915,6 @@
 
 
   parse.property = function (source) {
-    var buffer        = ""
-    var deepness      = 0
     var propertyName  = source.substring(0, source.indexOf(":"))
     var propertyValue = parse(source.substring(source.indexOf(":") + 1))
 

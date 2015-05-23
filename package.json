@@ -6,6 +6,7 @@
   "scripts": {
     "cov": "istanbul cover test.js",
     "doc": "locco --adapter=markdown --source=*.js --adapter-readme=object-pattern.js",
+    "minify": "uglifyjs object-pattern.js --mangle --screw-ie8 --compress > object-pattern.min.js",
     "lint": "jshint object-pattern.js",
     "test": "washington examples"
   },
@@ -28,6 +29,7 @@
     "jshint": "2.7.0",
     "locco": "1.0.2",
     "locco-markdown": "0.0.2",
+    "uglify-js": "^2.4.23",
     "washington": "0.11.2"
   },
   "homepage": "https://github.com/xaviervia/object-pattern"

@@ -1,3 +1,6 @@
+build:
+	npm run minify
+
 cov:
 	npm run cov
 
