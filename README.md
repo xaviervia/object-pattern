@@ -34,7 +34,7 @@ bower install --save object-pattern
 ```
 
 `object-pattern` supports CommonJS, AMD and globals, so feel free to require
-it as best fits you.
+it as best fits you. There is also a minified version in `object-pattern.min.js`.
 
 Usage
 -----
