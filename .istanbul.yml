@@ -1,3 +1,7 @@
 verbose: true
 instrumentation:
-  excludes: ["**/examples/**", "**/test.js", "**/OPN.js"]
+  excludes:
+    - "**/examples/**"
+    - "**/test.js"
+    - "**/OPN.js"
+    - "**/object-pattern.min.js"
