@@ -5,6 +5,7 @@
   "main": "object-pattern.js",
   "scripts": {
     "doc": "locco --adapter=markdown --source=*.js --adapter-readme=object-pattern.js",
+    "lint": "jshint object-pattern.js",
     "test": "washington examples"
   },
   "repository": {
@@ -22,6 +23,7 @@
     "url": "https://github.com/xaviervia/object-pattern/issues"
   },
   "devDependencies": {
+    "jshint": "2.7.0",
     "locco": "1.0.2",
     "locco-markdown": "0.0.2",
     "washington": "0.11.2"
