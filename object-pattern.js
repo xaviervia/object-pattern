@@ -1,3 +1,5 @@
+/* jshint asi: true, node: true, supernew: true */
+/* global define, window */
 // object-pattern
 // ==============
 //
