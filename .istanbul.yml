@@ -1,7 +1,0 @@
-verbose: true
-instrumentation:
-  excludes:
-    - "**/examples/**"
-    - "**/test.js"
-    - "**/OPN.js"
-    - "**/object-pattern.min.js"
