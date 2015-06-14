@@ -11,6 +11,8 @@ var WildcardProperty = require("../object-pattern").WildcardProperty
 var WildcardValue = require("../object-pattern").WildcardValue
 var parse = require("../object-pattern").parse
 
+
+
 example("parse: '' > OP", function () {
   return parse("") === undefined
 })

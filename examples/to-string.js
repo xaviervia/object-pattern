@@ -1,4 +1,5 @@
 var example           = require("washington")
+
 var ArrayEllipsis     = require("../object-pattern").ArrayEllipsis
 var ArrayPattern      = require("../object-pattern").ArrayPattern
 var ExactProperty     = require("../object-pattern").ExactProperty
@@ -7,6 +8,8 @@ var ObjectPattern     = require("../object-pattern").ObjectPattern
 var TypedValue        = require("../object-pattern").TypedValue
 var WildcardProperty  = require("../object-pattern").WildcardProperty
 var WildcardValue     = require("../object-pattern").WildcardValue
+
+
 
 example("toString: a:'value'", function (check) {
   check(new ObjectPattern(

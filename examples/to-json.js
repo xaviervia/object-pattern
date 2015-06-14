@@ -1,4 +1,5 @@
 var example = require("washington")
+
 var OP      = require("../object-pattern")
 
 
