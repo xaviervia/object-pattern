@@ -1,4 +1,4 @@
 var example   = require("washington")
-var examples  = require("./examples")
+var examples  = require("./index")
 
 example.go()

@@ -4,7 +4,7 @@
   "description": "Object Pattern structures for JavaScript",
   "main": "object-pattern.js",
   "scripts": {
-    "cov": "istanbul cover test.js",
+    "cov": "istanbul cover examples/run.js",
     "doc": "locco --adapter=markdown --source=*.js --adapter-readme=object-pattern.js",
     "minify": "uglifyjs object-pattern.js --mangle --screw-ie8 --compress > object-pattern.min.js",
     "lint": "jshint object-pattern.js",
