@@ -1,0 +1,11 @@
+languages:
+  Ruby: false
+  JavaScript: true
+  PHP: false
+  Python: false
+
+exclude_paths:
+  - "examples/*"
+  - "test.js"
+  - "OPN.js"
+  - "object-pattern.min.js"

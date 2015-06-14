@@ -1,9 +1,13 @@
+/* jshint asi: true, node: true, supernew: true */
+/* global define, window */
 // object-pattern
 // ==============
 //
-// [![Codeship status](https://codeship.com/projects/168ec210-8ee6-0132-51af-0a0cf4fe8e66/status?branch=master)](https://codeship.com/projects/61105)
+// [![Codeship status](https://codeship.com/projects/168ec210-8ee6-0132-51af-0a0cf4fe8e66/status?branch=master)](https://codeship.com/projects/61105) [![Code Climate](https://codeclimate.com/github/xaviervia/object-pattern/badges/gpa.svg)](https://codeclimate.com/github/xaviervia/object-pattern) [![Test Coverage](https://codeclimate.com/github/xaviervia/object-pattern/badges/coverage.svg)](https://codeclimate.com/github/xaviervia/object-pattern/coverage)
 //
 // Object Pattern structures for JavaScript.
+//
+// > You can try them out on the [Object Pattern playground](http://xaviervia.github.io/object-pattern/)
 //
 // `object-pattern` provides a fast and complete analog of Regular Expressions
 // but aimed to describe generic object structures instead of strings.
@@ -32,7 +36,7 @@
 // ```
 //
 // `object-pattern` supports CommonJS, AMD and globals, so feel free to require
-// it as best fits you.
+// it as best fits you. There is also a minified version in `object-pattern.min.js`.
 //
 // Usage
 // -----
@@ -269,6 +273,20 @@
     return "'" + value + "'"
   }
 
+  var toJSON = function (value) {
+    if (value instanceof ObjectPattern ||
+        value instanceof ArrayPattern)
+      return value.toJSON()
+
+    if (value instanceof WildcardValue)
+      return '*'
+
+    if (value instanceof TypedValue)
+      return '<' + value.type + '>'
+
+    return value
+  }
+
   // ### WildcardProperty
   //
   // Returns `true` if the value of any property is `===` to the assigned value.
@@ -298,7 +316,7 @@
 
 
   WildcardProperty.prototype.match = function (object) {
-    var key = undefined
+    var key;
 
     if (this.value instanceof Matchable) {
       for (key in object) if (this.value.match(object[key])) return true }
@@ -441,6 +459,30 @@
   }
 
 
+  ObjectPattern.prototype.toJSON = function () {
+    var json = {}
+
+    this.properties.forEach(function (property) {
+      if (property instanceof ExactProperty)
+        return (json[property.name] = toJSON(property.value))
+
+      if (property instanceof WildcardProperty)
+        return (json['*'] = toJSON(property.value))
+
+      if (property instanceof Negator)
+        if (property.matchable instanceof ExactProperty)
+          return (json['!' + property.matchable.name] =
+            toJSON(property.matchable.value))
+
+        else if (property.matchable instanceof WildcardProperty)
+          return (json['!*'] =
+            toJSON(property.matchable.value))
+    })
+
+    return json
+  }
+
+
 
   // ### WildcardValue
   //
@@ -505,23 +547,18 @@
     switch (this.type) {
       case 'array':
         return JSON.stringify(object).substring(0, 1) === '['
-        break;
 
       case 'boolean':
         return object === true || object === false
-        break
 
       case 'number':
         return JSON.stringify(object) === '' + object
-        break
 
       case 'object':
         return (JSON.stringify(object) || '').substring(0, 1) === '{'
-        break
 
       case 'string':
         return JSON.stringify(object) === '"' + object + '"'
-        break
 
       default:
         return object instanceof this.type
@@ -612,6 +649,22 @@
     return "/" + this.matchables.map(function (matchable) {
       return toString(matchable)
     }).join("/")
+  }
+
+
+  ArrayPattern.prototype.toJSON = function () {
+    var json = []
+
+    this.matchables.forEach(function (matchable) {
+      if (matchable instanceof ArrayEllipsis) {
+        json.push(toJSON('**'))
+        json.push(toJSON(matchable.termination))
+      }
+
+      else json.push(toJSON(matchable))
+    })
+
+    return json
   }
 
 
@@ -722,6 +775,8 @@
   //
   // For more examples please refer to the [OPN examples](OPN.js)
   var parse = function (source) {
+    if (source instanceof Object) return parseObject(source)
+
     if (source === "") return undefined
 
     if (source.substring(0, 1) === "/")
@@ -838,7 +893,6 @@
   parse.object = function (source) {
     var buffer = ""
     var nested = parse.nestedChecker([","])
-    var deepness = []
     var pattern = new ObjectPattern
     var escaped = false
 
@@ -863,8 +917,6 @@
 
 
   parse.property = function (source) {
-    var buffer        = ""
-    var deepness      = 0
     var propertyName  = source.substring(0, source.indexOf(":"))
     var propertyValue = parse(source.substring(source.indexOf(":") + 1))
 
@@ -882,6 +934,96 @@
       return new ExactProperty(propertyName, propertyValue)
   }
 
+
+
+  // ### parseObject
+  //
+  // Parses an endpoint constructed as a JavaScript object
+  // and returns the corresponding pattern structure.
+  //
+  // Usage:
+  //
+  // ```javascript
+  // var parseObject = require("object-pattern").parseObject
+  //
+  // var pattern = parse({ name: "*", age: "<number>"})
+  // pattern.match({
+  //   name: "Alex",
+  //   age: 24
+  // }) // => true
+  // ```
+  //
+  var parseObject = function (object) {
+    var pattern;
+
+    if (object instanceof Array) return parseObject.value(object)
+
+    pattern = new ObjectPattern
+
+    pattern.properties = Object
+      .keys(object)
+      .map(function (key) {
+        var value = parseObject.value( object[key] )
+
+        if (key === "*")
+          return new WildcardProperty(value)
+
+        if (key.substring(0, 1) === "!")
+          if (key.substring(1) === "*")
+            return new Negator(
+              new WildcardProperty( value ) )
+          else
+            return new Negator(
+              new ExactProperty( key.substring(1), value ) )
+
+        return new ExactProperty(key, value)
+      })
+
+    return pattern
+  }
+
+
+  parseObject.value = function (object) {
+    if (object instanceof Array)
+      return parseObject.array(object)
+
+    if (object instanceof Object)
+      return parseObject(object)
+
+    if (object === "*")
+      return new WildcardValue
+
+    if (object.substring &&
+        object.substring(0, 1) === "<" &&
+        object.substring(object.length - 1) === ">")
+      return new TypedValue(object.substring(1, object.length - 1))
+
+    return object
+  }
+
+
+  parseObject.array = function (array) {
+    var pattern = new ArrayPattern
+    pattern.matchables = array
+      .map(function (matchable, index, list) {
+        if (matchable === '**')
+          if (list[index + 1])
+            return new ArrayEllipsis(parseObject.value(list[index + 1]))
+          else
+            return new ArrayEllipsis()
+
+        return parseObject.value(matchable)
+      })
+
+      .filter(function (matchable, index, list) {
+        if (list[index - 1] && list[index - 1] instanceof ArrayEllipsis)
+          return false
+
+        return true
+      })
+
+    return pattern
+  }
 
 
   return {

@@ -1,9 +1,11 @@
 object-pattern
 ==============
 
-[![Codeship status](https://codeship.com/projects/168ec210-8ee6-0132-51af-0a0cf4fe8e66/status?branch=master)](https://codeship.com/projects/61105)
+[![Codeship status](https://codeship.com/projects/168ec210-8ee6-0132-51af-0a0cf4fe8e66/status?branch=master)](https://codeship.com/projects/61105) [![Code Climate](https://codeclimate.com/github/xaviervia/object-pattern/badges/gpa.svg)](https://codeclimate.com/github/xaviervia/object-pattern) [![Test Coverage](https://codeclimate.com/github/xaviervia/object-pattern/badges/coverage.svg)](https://codeclimate.com/github/xaviervia/object-pattern/coverage)
 
 Object Pattern structures for JavaScript.
+
+> You can try them out on the [Object Pattern playground](http://xaviervia.github.io/object-pattern/)
 
 `object-pattern` provides a fast and complete analog of Regular Expressions
 but aimed to describe generic object structures instead of strings.
@@ -32,7 +34,7 @@ bower install --save object-pattern
 ```
 
 `object-pattern` supports CommonJS, AMD and globals, so feel free to require
-it as best fits you.
+it as best fits you. There is also a minified version in `object-pattern.min.js`.
 
 Usage
 -----
@@ -426,6 +428,23 @@ pattern.match({
 ```
 
 For more examples please refer to the [OPN examples](OPN.js)
+### parseObject
+
+Parses an endpoint constructed as a JavaScript object
+and returns the corresponding pattern structure.
+
+Usage:
+
+```javascript
+var parseObject = require("object-pattern").parseObject
+
+var pattern = parse({ name: "*", age: "<number>"})
+pattern.match({
+  name: "Alex",
+  age: 24
+}) // => true
+```
+
 
 License
 -------
